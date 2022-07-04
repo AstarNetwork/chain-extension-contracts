@@ -1,4 +1,6 @@
 [workspace]
 members = [
-    "dapps-staking",
+    "crates/dapps-staking",
+
+    "examples/dapps-staking"
 ]
