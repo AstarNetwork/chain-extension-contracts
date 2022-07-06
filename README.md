@@ -40,7 +40,7 @@ DappsStaking::read_unbonding_period()
 #### XCM - WIP
 
 ### Examples & Tests
-These folders contain an example of how to use chain-extion structs in your contracts. The tests folders is an end-to-end tests for the chain extension. \
+These folders contain an example of how to use chain-extion structs in your contracts. The tests folders is an end-to-end tests for the chain extension. 
 
 **Runs the tests**
 1. Run a local node \
