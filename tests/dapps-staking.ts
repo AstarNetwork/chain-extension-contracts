@@ -5,6 +5,7 @@ import type { AccountId } from '@polkadot/types/interfaces';
 import { createType } from '@polkadot/types';
 import { Struct, u32, bool, Option } from '@polkadot/types';
 import { Balance } from '@polkadot/types/interfaces';
+import BN from "bn.js";
 const {api} = network
 
 export interface EraStake extends Struct {
@@ -21,30 +22,71 @@ interface EraStakingPointsIndividualClaim extends Struct {
     contractRewardClaimed: bool;
 }
 
+interface EraInfo extends Struct {
+    rewards: {
+        stakers: Balance;
+        dapps: Balance;
+    };
+    staked: Balance;
+    locked: Balance;
+}
+
 describe('DAPPS STAKING', () => {
     async function setup() {
         return setupContract('staking_example', 'new')
     }
 
-    it('pallet dapps-staking query and ink chain-extension query should match', async () => {
-        const {contract, defaultSigner} = await setup()
+    it('should read current era', async () => {
+        const {contract} = await setup()
 
         let currentEra = await api.query.dappsStaking.currentEra()
-        console.log(currentEra.toHuman())
-        // await expect(contract.query.readCurrentEra()).to.output(currentEra) //TODO
+        await expect(contract.query.readCurrentEra()).to.output(currentEra)
 
-        // read_unbonding_period() // TODO
-        const bondingDuration = api.consts.staking
-        console.log(bondingDuration)
+        // const contractStake = (await api.query.dappsStaking.contractEraStake<Option<EraStakingPointsIndividualClaim>>({Wasm: contract.address}, currentEra))?.unwrapOrDefault();
+        // // console.log(contractStake.toHuman())
+        // await expect(contract.query.readContractStake()).to.output(contractStake.total)
+    })
 
-        let generalEraInfo = await api.query.dappsStaking.generalEraInfo(currentEra)
-        console.log(generalEraInfo.toHuman())
-        // await expect(contract.query.read_era_reward(generalEraInfo)).to.output(currentEra) //TODO
+    it('should read unbonding period', async () => {
+        const {contract} = await setup()
 
-        let staked = await api.query.dappsStaking.ledger(defaultSigner.address)
+        const bondingDuration = api.consts.dappsStaking.unbondingPeriod
+        await expect(contract.query.readUnbondingPeriod()).to.output(bondingDuration)
+    })
+
+    it('should read era reward', async () => {
+        const {contract} = await setup()
+
+        let currentEra = await api.query.dappsStaking.currentEra()
+        const generalEraInfo = (await api.query.dappsStaking.generalEraInfo<Option<EraInfo>>(currentEra))?.unwrapOrDefault()
         // @ts-ignore
-        console.log(staked.locked.toHuman())
-        // read_staked_amount
+        await expect(contract.query.readEraReward(currentEra)).to.output(generalEraInfo.rewards.dapps + generalEraInfo.rewards.stakers)
+    })
+
+    it('should read era staked', async () => {
+        const {contract} = await setup()
+
+        let currentEra = await api.query.dappsStaking.currentEra()
+        const generalEraInfo = (await api.query.dappsStaking.generalEraInfo<Option<EraInfo>>(currentEra))?.unwrapOrDefault()
+        await expect(contract.query.readEraStaked(currentEra)).to.output(generalEraInfo.staked)
+    })
+
+    it('should read contract stake', async () => {
+        const {contract, defaultSigner, one} = await setup()
+
+        await api.tx.dappsStaking.register({ Wasm: contract.address })
+        await api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one)
+
+        let ledger = await api.query.dappsStaking.ledger(defaultSigner.address)
+        // @ts-ignore
+        await expect(contract.query.readStakedAmount(defaultSigner.address)).to.output(ledger.locked)
+    })
+
+    it('should read staked amount on contract', async () => {
+        const {contract, defaultSigner, one} = await setup()
+
+        await api.tx.dappsStaking.register({ Wasm: contract.address })
+        await api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one)
 
         const generalStakerInfo = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
             defaultSigner.address,
@@ -52,11 +94,6 @@ describe('DAPPS STAKING', () => {
                 Wasm: contract.address,
             }
         );
-        console.log(generalStakerInfo.toHuman())
-        //excpect read_staked_amount_on_contract
-
-        const contractStake = await (await api.query.dappsStaking.contractEraStake<Option<EraStakingPointsIndividualClaim>>({Wasm: contract.address}, currentEra))?.unwrapOrDefault();
-        console.log(contractStake.toHuman())
-        // read_contract_stake
+        await expect(contract.query.readStakedAmountOnContract()).to.output(generalStakerInfo.stakes[generalStakerInfo.stakes.length])
     })
 })
