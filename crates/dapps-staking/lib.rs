@@ -44,16 +44,6 @@ impl DappsStaking {
             .call(&era)
     }
 
-    // /// Fetch reward from EraRewardsAndStakes storage map
-    // /// Returns '0' if no rewards
-    // pub fn read_era_reward(era: u32) -> Result<Balance, DSError> {
-    //     ::ink_env::chain_extension::ChainExtensionMethod::build(3403u32)
-    //         .input::<u32>()
-    //         .output::<Result<Balance, DSError>>()
-    //         .handle_error_code::<DSError>()
-    //         .call(&era)?
-    // }
-
     /// Fetch total staked amount from EraRewardsAndStakes storage map
     pub fn read_era_staked(era: u32) -> Balance {
         ::ink_env::chain_extension::ChainExtensionMethod::build(3404u32)
@@ -62,15 +52,6 @@ impl DappsStaking {
             .ignore_error_code()
             .call(&era)
     }
-
-    // /// Fetch total staked amount from EraRewardsAndStakes storage map
-    // pub fn read_era_staked(era: u32) -> Result<Balance, DSError> {
-    //     ::ink_env::chain_extension::ChainExtensionMethod::build(3404u32)
-    //         .input::<u32>()
-    //         .output::<Result<Balance, DSError>>()
-    //         .handle_error_code::<DSError>()
-    //         .call(&era)?
-    // }
 
     /// Fetch Ledger storage map for an account
     pub fn read_staked_amount(account: AccountId) -> Balance {
@@ -81,41 +62,23 @@ impl DappsStaking {
             .call(&account)
     }
 
-    // /// Fetch Ledger storage map for an account
-    // pub fn read_staked_amount(account: AccountId) -> Result<Balance, DSError> {
-    //     ::ink_env::chain_extension::ChainExtensionMethod::build(3405u32)
-    //         .input::<AccountId>()
-    //         .output::<Result<Balance, DSError>>()
-    //         .handle_error_code::<DSError>()
-    //         .call(&account)?
-    // }
-
     /// Read GeneralStakerInfo for account/contract
-    pub fn read_staked_amount_on_contract(contract_account_id: AccountId) -> Balance {
+    pub fn read_staked_amount_on_contract(staker: AccountId, contract: AccountId) -> Balance {
+        let input = DappsStakingAccountInput { staker, contract };
         ::ink_env::chain_extension::ChainExtensionMethod::build(3406u32)
+            .input::<DappsStakingAccountInput>()
+            .output::<Balance>()
+            .ignore_error_code()
+            .call(&input)
+    }
+
+    /// Read the amount staked on contract in the given era
+    pub fn read_contract_stake(contract: AccountId) -> Balance {
+        ::ink_env::chain_extension::ChainExtensionMethod::build(3407u32)
             .input::<AccountId>()
             .output::<Balance>()
             .ignore_error_code()
-            .call(&contract_account_id)
-    }
-
-    // /// Read GeneralStakerInfo for account/contract
-    // pub fn read_staked_amount_on_contract(contract_account_id: AccountId) -> Result<Balance, DSError> {
-    //     ::ink_env::chain_extension::ChainExtensionMethod::build(3406u32)
-    //         .input::<AccountId>()
-    //         .output::<Result<Balance, DSError>>()
-    //         .handle_error_code::<DSError>()
-    //         .call(&contract_account_id)?
-    // }
-
-    /// Read the amount staked on contract in the given era
-    pub fn read_contract_stake(staker: AccountId, contract: AccountId) -> Result<Balance, DSError> {
-        let input = DappsStakingAccountInput { staker, contract };
-        ::ink_env::chain_extension::ChainExtensionMethod::build(3407u32)
-            .input::<DappsStakingAccountInput>()
-            .output::<Result<Balance, DSError>>()
-            .handle_error_code::<DSError>()
-            .call(&input)?
+            .call(&contract)
     }
 
     /// Register contract with the dapp-staking pallet
@@ -128,20 +91,20 @@ impl DappsStaking {
     }
 
     /// Lock up and stake balance of the origin account.
-    pub fn bond_and_stake(account_id: AccountId, value: Balance) -> Result<(), DSError> {
-        let input = DappsStakingInput { account_id, value };
+    pub fn bond_and_stake(contract: AccountId, value: Balance) -> Result<(), DSError> {
+        let input = DappsStakingValueInput { contract, value };
         ::ink_env::chain_extension::ChainExtensionMethod::build(3409u32)
-            .input::<DappsStakingInput>()
+            .input::<DappsStakingValueInput>()
             .output::<Result<(), DSError>>()
             .handle_error_code::<DSError>()
             .call(&input)?
     }
 
     /// Start unbonding process and unstake balance from the contract.
-    pub fn unbond_and_stake(account_id: AccountId, value: Balance) -> Result<(), DSError> {
-        let input = DappsStakingInput { account_id, value };
+    pub fn unbond_and_stake(contract: AccountId, value: Balance) -> Result<(), DSError> {
+        let input = DappsStakingValueInput { contract, value };
         ::ink_env::chain_extension::ChainExtensionMethod::build(3410u32)
-            .input::<DappsStakingInput>()
+            .input::<DappsStakingValueInput>()
             .output::<Result<(), DSError>>()
             .handle_error_code::<DSError>()
             .call(&input)?
@@ -165,10 +128,10 @@ impl DappsStaking {
     }
 
     /// Claim rewards for the contract in the dapps-staking pallet
-    pub fn claim_dapp(account_id: AccountId, value: Balance) -> Result<(), DSError> {
-        let input = DappsStakingInput { account_id, value };
+    pub fn claim_dapp(contract: AccountId, value: Balance) -> Result<(), DSError> {
+        let input = DappsStakingValueInput { contract, value };
         ::ink_env::chain_extension::ChainExtensionMethod::build(3413u32)
-            .input::<DappsStakingInput>()
+            .input::<DappsStakingValueInput>()
             .output::<Result<(), DSError>>()
             .handle_error_code::<DSError>()
             .call(&input)?
@@ -193,10 +156,10 @@ impl DappsStaking {
     }
 
     /// Claim rewards for the contract in the dapps-staking pallet
-    pub fn nomination_transfer(account_id: AccountId, value: Balance) -> Result<(), DSError> {
-        let input = DappsStakingInput { account_id, value };
+    pub fn nomination_transfer(contract: AccountId, value: Balance) -> Result<(), DSError> {
+        let input = DappsStakingValueInput { contract, value };
         ::ink_env::chain_extension::ChainExtensionMethod::build(3416u32)
-            .input::<DappsStakingInput>()
+            .input::<DappsStakingValueInput>()
             .output::<Result<(), DSError>>()
             .handle_error_code::<DSError>()
             .call(&input)?
@@ -205,7 +168,7 @@ impl DappsStaking {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Encode, Decode)]
 pub struct DappsStakingValueInput {
-    account_id: AccountId,
+    contract: AccountId,
     value: Balance,
 }
 

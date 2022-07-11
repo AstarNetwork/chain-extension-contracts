@@ -36,44 +36,24 @@ pub mod staking_example {
             DappsStaking::read_era_reward(era)
         }
 
-        // #[ink(message)]
-        // pub fn read_era_reward(&self, era: u32) -> Result<Balance, StakingError> {
-        //     DappsStaking::read_era_reward(era).map_err(|e| return StakingError::DsError(e))
-        // }
-
         #[ink(message)]
         pub fn read_era_staked(&self, era: u32) -> Balance {
             DappsStaking::read_era_staked(era)
         }
-
-        // #[ink(message)]
-        // pub fn read_era_staked(&self, era: u32) -> Result<Balance, StakingError> {
-        //     DappsStaking::read_era_staked(era).map_err(|e| return StakingError::DsError(e))
-        // }
 
         #[ink(message)]
         pub fn read_staked_amount(&self, account: AccountId) -> Balance {
             DappsStaking::read_staked_amount(account)
         }
 
-        // #[ink(message)]
-        // pub fn read_staked_amount(&self, account: AccountId) -> Result<Balance, StakingError> {
-        //     DappsStaking::read_staked_amount(account).map_err(|e| return StakingError::DsError(e))
-        // }
-
         #[ink(message)]
-        pub fn read_staked_amount_on_contract(&self, account: AccountId) -> Balance {
-            DappsStaking::read_staked_amount_on_contract(account)
+        pub fn read_staked_amount_on_contract(&self, staker: AccountId, contract: AccountId) -> Balance {
+            DappsStaking::read_staked_amount_on_contract(staker, contract)
         }
 
-        // #[ink(message)]
-        // pub fn read_staked_amount_on_contract(&self, account: AccountId) -> Result<Balance, StakingError> {
-        //     DappsStaking::read_staked_amount_on_contract(account).map_err(|e| return StakingError::DsError(e))
-        // }
-
         #[ink(message)]
-        pub fn read_contract_stake(&self, account: AccountId) -> Result<Balance, StakingError> {
-            DappsStaking::read_contract_stake(account).map_err(|e| return StakingError::DsError(e))
+        pub fn read_contract_stake(&self, account: AccountId) -> Balance {
+            DappsStaking::read_contract_stake(account)
         }
 
         #[ink(message)]
