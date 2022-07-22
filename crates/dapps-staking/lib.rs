@@ -101,7 +101,7 @@ impl DappsStaking {
     }
 
     /// Start unbonding process and unstake balance from the contract.
-    pub fn unbond_and_stake(contract: AccountId, value: Balance) -> Result<(), DSError> {
+    pub fn unbond_and_unstake(contract: AccountId, value: Balance) -> Result<(), DSError> {
         let input = DappsStakingValueInput { contract, value };
         ::ink_env::chain_extension::ChainExtensionMethod::build(3410u32)
             .input::<DappsStakingValueInput>()

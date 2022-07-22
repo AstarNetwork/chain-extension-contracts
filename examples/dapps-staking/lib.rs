@@ -67,8 +67,8 @@ pub mod staking_example {
         }
 
         #[ink(message)]
-        pub fn unbond_and_stake(&mut self, contract: AccountId, value: Balance) -> Result<(), StakingError> {
-            DappsStaking::unbond_and_stake(contract, value).map_err(|e| return StakingError::DsError(e))
+        pub fn unbond_and_unstake(&mut self, contract: AccountId, value: Balance) -> Result<(), StakingError> {
+            DappsStaking::unbond_and_unstake(contract, value).map_err(|e| return StakingError::DsError(e))
         }
 
         #[ink(message)]
