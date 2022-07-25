@@ -9,7 +9,6 @@
     "@babel/plugin-transform-runtime": "^7.14.2",
     "@babel/preset-env": "^7.7.4",
     "@babel/register": "^7.7.4",
-    "@polkadot/api": "^6.5.1",
     "@redspot/chai": "^0.13.4",
     "@redspot/gas-reporter": "^0.13.5",
     "@redspot/patract": "^0.13.5",

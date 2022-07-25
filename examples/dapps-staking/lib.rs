@@ -77,8 +77,8 @@ pub mod staking_example {
         }
 
         #[ink(message)]
-        pub fn claim_dapp(&mut self, account_id: AccountId, value: Balance) -> Result<(), StakingError> {
-            DappsStaking::claim_dapp(account_id, value).map_err(|e| return StakingError::DsError(e))
+        pub fn claim_dapp(&mut self, account_id: AccountId, era: u32) -> Result<(), StakingError> {
+            DappsStaking::claim_dapp(account_id, era).map_err(|e| return StakingError::DsError(e))
         }
 
         #[ink(message)]

@@ -128,10 +128,10 @@ impl DappsStaking {
     }
 
     /// Claim rewards for the contract in the dapps-staking pallet
-    pub fn claim_dapp(contract: AccountId, value: Balance) -> Result<(), DSError> {
-        let input = DappsStakingValueInput { contract, value };
+    pub fn claim_dapp(contract: AccountId, era: u32) -> Result<(), DSError> {
+        let input = DappsStakingEraInput { contract, era };
         ::ink_env::chain_extension::ChainExtensionMethod::build(3413u32)
-            .input::<DappsStakingValueInput>()
+            .input::<DappsStakingEraInput>()
             .output::<Result<(), DSError>>()
             .handle_error_code::<DSError>()
             .call(&input)?
@@ -164,6 +164,12 @@ impl DappsStaking {
             .handle_error_code::<DSError>()
             .call(&input)?
     }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Encode, Decode)]
+pub struct DappsStakingEraInput {
+    contract: AccountId,
+    era: u32,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Encode, Decode)]
@@ -204,7 +210,7 @@ pub struct EraInfo<Balance: HasCompact> {
     pub locked: Balance,
 }
 
-#[derive(scale::Encode, scale::Decode)]
+#[derive(PartialEq, Eq, Copy, Clone, scale::Encode, scale::Decode, Debug)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 pub enum DSError {
     /// Disabled

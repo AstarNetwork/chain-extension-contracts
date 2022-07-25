@@ -1,4 +1,4 @@
-import {setupContract} from './helper'
+import {forceEras, setupContract} from './helper'
 import {network} from 'redspot'
 import {expect} from "./setup/chai";
 import type { AccountId } from '@polkadot/types/interfaces';
@@ -175,38 +175,78 @@ describe('DAPPS STAKING', () => {
     })
 
     it('should withdraw unbonded', async () => {
-        const {contract, one, defaultSigner, alice} = await setup()
+        const {contract, one, alice, defaultSigner} = await setup()
 
-        // @ts-ignore
-        const { data: balanceBefore } = await api.query.system.account(defaultSigner.address)
-        console.log(balanceBefore.free.toHuman())
-
-        // register & bond 1000 on contract
+        // register & bond 50000 on contract
         await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
-        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(1000)), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(50000)), defaultSigner.address)
+
+        // advance 4 eras
+        await forceEras(4, alice)
 
         // unbond & unstake 600
-        await buildTx(api.registry, api.tx.dappsStaking.unbondAndUnstake({ Wasm: contract.address }, one.muln(600)), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.unbondAndUnstake({ Wasm: contract.address }, one.muln(50000)), defaultSigner.address)
+
+        // advance 4 eras
+        await forceEras(4, alice)
+
+        const balanceBefore = await api.query.system.account(defaultSigner.address)
+        // @ts-ignore
+        expect(balanceBefore.data.reserved).to.not.equal(balanceBefore.data.free)
+
+        await contract.tx.withdrawUnbonded()
+
+        const balanceAfter = await api.query.system.account(defaultSigner.address)
+        // @ts-ignore
+        expect(balanceAfter.data.reserved).to.not.equal(balanceAfter.data.free)
+    })
+
+    it('should claim staker', async () => {
+        const {contract, one, alice, defaultSigner} = await setup()
+
+        const blockPerEra = api.consts.dappsStaking.blockPerEra
+
+        // register & bond 50000 on contract
+        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(50000)), defaultSigner.address)
+
+        // advance 4 eras
+        await forceEras(4, alice)
+
+        // unbond & unstake 600
+        await buildTx(api.registry, api.tx.dappsStaking.unbondAndUnstake({ Wasm: contract.address }, one.muln(50000)), defaultSigner.address)
+
+        // advance 4 eras
+        await forceEras(4, alice)
+
+        const balanceBefore = await api.query.system.account(defaultSigner.address)
+
+        await contract.tx.claimStaker(contract.address)
+
+        const balanceAfter = await api.query.system.account(defaultSigner.address)
+        // @ts-ignore
+        expect(balanceBefore.data.free).is.below(balanceAfter.data.free)
+    })
+
+    it('should claim dapp', async () => {
+        const {contract, one, alice, defaultSigner} = await setup()
+
+        // register & bond 50000 on contract
+        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(50000)), defaultSigner.address)
+
+        // advance 4 eras
+        await forceEras(4, alice)
+
+        const balanceBefore = await api.query.system.account(defaultSigner.address)
 
         let currentEra = await api.query.dappsStaking.currentEra()
-        console.log(currentEra)
-        // advance 3 eras
-        await buildTx(api.registry, api.tx.dappsStaking.forceNewEra(), alice.address)
-        await buildTx(api.registry, api.tx.dappsStaking.forceNewEra(), alice.address)
-        await buildTx(api.registry, api.tx.dappsStaking.forceNewEra(), alice.address)
+        // @ts-ignore
+        await contract.tx.claimDapp(contract.address, currentEra - 1)
 
-        let currentEra2 = await api.query.dappsStaking.currentEra()
-        console.log(currentEra2)
+        const balanceAfter = await api.query.system.account(defaultSigner.address)
 
         // @ts-ignore
-        const { data: balanceAfter } = await api.query.system.account(defaultSigner.address)
-        console.log(balanceAfter.free.toHuman())
-
-        // unbond & unstake 600
-        await contract.query.withdrawUnbonded()
-
-        // @ts-ignore
-        const { data: balanceAfter3 } = await api.query.system.account(defaultSigner.address)
-        console.log(balanceAfter3.free.toHuman())
+        expect(balanceBefore.data.free).is.below(balanceAfter.data.free)
     })
 })
