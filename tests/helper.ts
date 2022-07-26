@@ -34,9 +34,9 @@ export const setupContract = async (name, constructor, ...args) => {
     }
 }
 
-export const forceEras = async (eras, caller) => {
+export const forceEras = async (eras, sudo) => {
     const forceNewEra = api.tx.sudo.sudo(api.tx.dappsStaking.forceNewEra())
     for (let i = 0; i < eras; i++) {
-        await buildTx(api.registry, forceNewEra, caller.address)
+        await buildTx(api.registry, forceNewEra, sudo.address)
     }
 }
