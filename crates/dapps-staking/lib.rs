@@ -146,20 +146,19 @@ impl DappsStaking {
             .call(&destination)?
     }
 
-    /// Withdraw staked funds from the unregistered contract
-    pub fn withdraw_from_unregistered(account_id: AccountId) -> Result<(), DSError> {
-        ::ink_env::chain_extension::ChainExtensionMethod::build(3415u32)
-            .input::<AccountId>()
-            .output::<Result<(), DSError>>()
-            .handle_error_code::<DSError>()
-            .call(&account_id)?
-    }
-
     /// Claim rewards for the contract in the dapps-staking pallet
-    pub fn nomination_transfer(contract: AccountId, value: Balance) -> Result<(), DSError> {
-        let input = DappsStakingValueInput { contract, value };
-        ::ink_env::chain_extension::ChainExtensionMethod::build(3416u32)
-            .input::<DappsStakingValueInput>()
+    pub fn nomination_transfer(
+        origin_contract: AccountId,
+        target_contract: AccountId,
+        value: Balance,
+    ) -> Result<(), DSError> {
+        let input = DappsStakingNominationInput {
+            origin_contract,
+            target_contract,
+            value,
+        };
+        ::ink_env::chain_extension::ChainExtensionMethod::build(3415u32)
+            .input::<DappsStakingNominationInput>()
             .output::<Result<(), DSError>>()
             .handle_error_code::<DSError>()
             .call(&input)?
@@ -182,6 +181,13 @@ pub struct DappsStakingValueInput {
 pub struct DappsStakingAccountInput {
     contract: AccountId,
     staker: AccountId,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Encode, Decode)]
+pub struct DappsStakingNominationInput {
+    pub origin_contract: AccountId,
+    pub target_contract: AccountId,
+    pub value: Balance,
 }
 
 /// A record of rewards allocated for stakers and dapps
@@ -210,8 +216,8 @@ pub struct EraInfo<Balance: HasCompact> {
     pub locked: Balance,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, scale::Encode, scale::Decode, Debug)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+#[derive(PartialEq, Eq, Copy, Clone, Encode, Decode, Debug)]
 pub enum DSError {
     /// Disabled
     Disabled,
@@ -267,6 +273,8 @@ pub enum DSError {
     NotActiveStaker,
     /// Transfering nomination to the same contract
     NominationTransferToSameContract,
+    /// Unexpected reward destination value
+    RewardDestinationValueOutOfBounds,
 }
 
 impl ink_env::chain_extension::FromStatusCode for DSError {

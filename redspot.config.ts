@@ -51,6 +51,6 @@ export default {
         }
     },
     mocha: {
-        timeout: 60000
+        timeout: 600000
     }
 } as RedspotUserConfig

@@ -16,6 +16,7 @@ export const setupContract = async (name, constructor, ...args) => {
     // @ts-ignore
     const alice = createSigner(signer, new Keyring({ type: 'sr25519'}).addFromUri('//Alice'));
     const defaultSigner = await getRandomSigner(signers[0], one.muln(100000))
+    const bob = await getRandomSigner(signers[1], one.muln(100000))
 
     const contractFactory = await getContractFactory(name, defaultSigner)
     const contract = await contractFactory.deploy(constructor, ...args)
@@ -24,6 +25,7 @@ export const setupContract = async (name, constructor, ...args) => {
     return {
         defaultSigner,
         alice,
+        bob,
         accounts: [alice, await getRandomSigner(), await getRandomSigner()],
         contractFactory,
         contract,

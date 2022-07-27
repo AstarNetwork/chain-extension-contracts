@@ -1,47 +1,10 @@
 import {forceEras, setupContract} from './helper'
 import {network} from 'redspot'
 import {expect} from "./setup/chai";
-import type { AccountId } from '@polkadot/types/interfaces';
-import { Struct, u32, bool, Option } from '@polkadot/types';
-import { Balance } from '@polkadot/types/interfaces';
+import { Option } from '@polkadot/types';
 import { buildTx } from '@redspot/patract/buildTx'
+import {AccountLedger, EraInfo, EraStakingPointsIndividualClaim, GeneralStakerInfo} from "./types";
 const {api} = network
-
-interface EraStake extends Struct {
-    staked: Balance;
-    era: number;
-}
-interface GeneralStakerInfo extends Struct {
-    readonly stakes: EraStake[];
-}
-
-interface EraStakingPointsIndividualClaim extends Struct {
-    total: Balance;
-    numberOfStakers: u32;
-    contractRewardClaimed: bool;
-}
-
-interface RegisteredDapps extends Struct {
-    readonly developer: AccountId;
-    readonly state: State;
-}
-
-interface State {
-    isUnregistered: boolean;
-    asUnregistered: {
-        // Memo: era of unregistered
-        words: number[];
-    };
-}
-
-interface EraInfo extends Struct {
-    rewards: {
-        stakers: Balance;
-        dapps: Balance;
-    };
-    staked: Balance;
-    locked: Balance;
-}
 
 describe('DAPPS STAKING', () => {
     async function setup() {
@@ -175,30 +138,29 @@ describe('DAPPS STAKING', () => {
     })
 
     it('should withdraw unbonded', async () => {
-        const {contract, one, alice, defaultSigner} = await setup()
+        const {contract, one, alice, bob, defaultSigner} = await setup()
 
         const bondingDuration = api.consts.dappsStaking.unbondingPeriod
 
         // register & bond 50000 on contract
         await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
-        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(50000)), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(50000)), bob.address)
 
         // @ts-ignore
         await forceEras(bondingDuration + 1, alice)
 
-        // unbond & unstake 600
-        await buildTx(api.registry, api.tx.dappsStaking.unbondAndUnstake({ Wasm: contract.address }, one.muln(50000)), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.unbondAndUnstake({ Wasm: contract.address }, one.muln(50000)), bob.address)
 
         // @ts-ignore
         await forceEras(bondingDuration + 1, alice)
 
-        const balanceBefore = await api.query.system.account(defaultSigner.address)
+        const balanceBefore = await api.query.system.account(bob.address)
         // @ts-ignore
         expect(balanceBefore.data.reserved).to.not.equal(balanceBefore.data.free)
 
-        await contract.tx.withdrawUnbonded()
+        await contract.connect(bob).tx.withdrawUnbonded()
 
-        const balanceAfter = await api.query.system.account(defaultSigner.address)
+        const balanceAfter = await api.query.system.account(bob.address)
         // @ts-ignore
         expect(balanceAfter.data.reserved).to.not.equal(balanceAfter.data.free)
         // @ts-ignore
@@ -262,5 +224,69 @@ describe('DAPPS STAKING', () => {
         expect(actualRewards).is.below(theoricalrewards)
         // check that actualRewards is within a +3% range
         expect(actualRewards * 1.03).is.above(theoricalrewards)
+    })
+
+    it('should update reward destination', async () => {
+        const {contract, defaultSigner, one} = await setup()
+
+        // should be an active staker
+        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(50000)), defaultSigner.address)
+
+        // by default is set to StakeBalance
+        const ledger = await api.query.dappsStaking.ledger<AccountLedger>(defaultSigner.address)
+
+        // @ts-ignore
+        expect(ledger.rewardDestination).to.equal('StakeBalance')
+
+        // set to FreeBalance
+        await contract.tx.setRewardDestination(0)
+
+        const ledger2 = await api.query.dappsStaking.ledger<AccountLedger>(defaultSigner.address)
+        // @ts-ignore
+        await expect(ledger2.rewardDestination).to.equal('FreeBalance')
+    })
+
+    it('should nomination transfer', async () => {
+        const {contract, defaultSigner, one, alice, bob} = await setup()
+        const {contract: contract2} = await setup()
+
+        // register both contracts & stake in the first one
+        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract2.address }), bob.address)
+        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(50000)), alice.address)
+
+        const stakerInfoContract1Before = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
+            alice.address,
+            {
+                Wasm: contract.address,
+            }
+        );
+        const stakerInfoContract2Before = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
+            alice.address,
+            {
+                Wasm: contract2.address,
+            }
+        );
+
+        await contract.connect(alice).tx.nominationTransfer(contract.address, contract2.address, one.muln(1000))
+
+        const stakerInfoContract1After = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
+            alice.address,
+            {
+                Wasm: contract.address,
+            }
+        );
+        const stakerInfoContract2After = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
+            alice.address,
+            {
+                Wasm: contract2.address,
+            }
+        );
+
+        expect(stakerInfoContract1Before.stakes[stakerInfoContract1Before.stakes.length - 1].staked.toBn()).to.equal(one.muln(50000))
+        expect(stakerInfoContract2Before.stakes).to.equal([])
+        expect(stakerInfoContract1After.stakes[stakerInfoContract1Before.stakes.length - 1].staked.toBn()).to.equal(one.muln(49000))
+        expect(stakerInfoContract2After.stakes[stakerInfoContract1Before.stakes.length - 1].staked.toBn()).to.equal(one.muln(1000))
     })
 })

@@ -92,13 +92,14 @@ pub mod staking_example {
         }
 
         #[ink(message)]
-        pub fn withdraw_from_unregistered(&mut self, account_id: AccountId) -> Result<(), StakingError> {
-            DappsStaking::withdraw_from_unregistered(account_id).map_err(|e| return StakingError::DsError(e))
-        }
-
-        #[ink(message)]
-        pub fn nomination_transfer(&mut self, account_id: AccountId, value: Balance) -> Result<(), StakingError> {
-            DappsStaking::nomination_transfer(account_id, value).map_err(|e| return StakingError::DsError(e))
+        pub fn nomination_transfer(
+            &mut self,
+            origin_contract: AccountId,
+            target_contract: AccountId,
+            value: Balance,
+        ) -> Result<(), StakingError> {
+            DappsStaking::nomination_transfer(origin_contract, target_contract, value)
+                .map_err(|e| return StakingError::DsError(e))
         }
     }
 }
