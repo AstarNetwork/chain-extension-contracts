@@ -57,11 +57,6 @@ pub mod staking_example {
         }
 
         #[ink(message)]
-        pub fn register(&mut self, contract: AccountId) -> Result<(), StakingError> {
-            DappsStaking::register(contract).map_err(|e| return StakingError::DsError(e))
-        }
-
-        #[ink(message)]
         pub fn bond_and_stake(&mut self, contract: AccountId, value: Balance) -> Result<(), StakingError> {
             DappsStaking::bond_and_stake(contract, value).map_err(|e| return StakingError::DsError(e))
         }
