@@ -266,8 +266,6 @@ pub enum DSError {
     NominationTransferToSameContract = 26,
     /// Unexpected reward destination value
     RewardDestinationValueOutOfBounds = 27,
-    /// Failed to write result on buffer
-    FailedToWriteOnBuffer = 28,
     /// Unknown error
     UnknownError = 99,
 }
@@ -303,7 +301,6 @@ impl ink_env::chain_extension::FromStatusCode for DSError {
             25 => Err(Self::NotActiveStaker),
             26 => Err(Self::NominationTransferToSameContract),
             27 => Err(Self::RewardDestinationValueOutOfBounds),
-            28 => Err(Self::FailedToWriteOnBuffer),
             99 => Err(Self::UnknownError),
             _ => panic!("encountered unknown status code"),
         }
