@@ -86,7 +86,7 @@ impl DappsStaking {
         let input = DappsStakingValueInput { contract, value };
         ::ink_env::chain_extension::ChainExtensionMethod::build(0008u32)
             .input::<DappsStakingValueInput>()
-            .output::<Result<(), DSError>>()
+            .output()
             .handle_error_code::<DSError>()
             .call(&input)?
     }
@@ -96,26 +96,26 @@ impl DappsStaking {
         let input = DappsStakingValueInput { contract, value };
         ::ink_env::chain_extension::ChainExtensionMethod::build(0009u32)
             .input::<DappsStakingValueInput>()
-            .output::<Result<(), DSError>>()
+            .output::<()>()
             .handle_error_code::<DSError>()
-            .call(&input)?
+            .call(&input)
     }
 
     pub fn withdraw_unbonded() -> Result<(), DSError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0010u32)
             .input::<()>()
-            .output::<Result<(), DSError>>()
+            .output::<()>()
             .handle_error_code::<DSError>()
-            .call(&())?
+            .call(&())
     }
 
     /// Claim rewards for the contract in the dapps-staking pallet
     pub fn claim_staker(account_id: AccountId) -> Result<(), DSError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0011u32)
             .input::<AccountId>()
-            .output::<Result<(), DSError>>()
+            .output::<()>()
             .handle_error_code::<DSError>()
-            .call(&account_id)?
+            .call(&account_id)
     }
 
     /// Claim rewards for the contract in the dapps-staking pallet
@@ -123,18 +123,18 @@ impl DappsStaking {
         let input = DappsStakingEraInput { contract, era };
         ::ink_env::chain_extension::ChainExtensionMethod::build(0012u32)
             .input::<DappsStakingEraInput>()
-            .output::<Result<(), DSError>>()
+            .output::<()>()
             .handle_error_code::<DSError>()
-            .call(&input)?
+            .call(&input)
     }
 
     /// Set claim reward destination for the caller
     pub fn set_reward_destination(destination: u8) -> Result<(), DSError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0013u32)
             .input::<u8>()
-            .output::<Result<(), DSError>>()
+            .output::<()>()
             .handle_error_code::<DSError>()
-            .call(&destination)?
+            .call(&destination)
     }
 
     /// Claim rewards for the contract in the dapps-staking pallet
@@ -150,9 +150,9 @@ impl DappsStaking {
         };
         ::ink_env::chain_extension::ChainExtensionMethod::build(0014u32)
             .input::<DappsStakingNominationInput>()
-            .output::<Result<(), DSError>>()
+            .output::<()>()
             .handle_error_code::<DSError>()
-            .call(&input)?
+            .call(&input)
     }
 }
 
@@ -211,67 +211,100 @@ pub struct EraInfo<Balance: HasCompact> {
 #[derive(PartialEq, Eq, Copy, Clone, Encode, Decode, Debug)]
 pub enum DSError {
     /// Disabled
-    Disabled,
+    Disabled = 1,
     /// No change in maintenance mode
-    NoMaintenanceModeChange,
+    NoMaintenanceModeChange = 2,
     /// Upgrade is too heavy, reduce the weight parameter.
-    UpgradeTooHeavy,
+    UpgradeTooHeavy = 3,
     /// Can not stake with zero value.
-    StakingWithNoValue,
+    StakingWithNoValue = 4,
     /// Can not stake with value less than minimum staking value
-    InsufficientValue,
+    InsufficientValue = 5,
     /// Number of stakers per contract exceeded.
-    MaxNumberOfStakersExceeded,
+    MaxNumberOfStakersExceeded = 6,
     /// Targets must be operated contracts
-    NotOperatedContract,
+    NotOperatedContract = 7,
     /// Contract isn't staked.
-    NotStakedContract,
+    NotStakedContract = 8,
     /// Contract isn't unregistered.
-    NotUnregisteredContract,
+    NotUnregisteredContract = 9,
     /// Unclaimed rewards should be claimed before withdrawing stake.
-    UnclaimedRewardsRemaining,
+    UnclaimedRewardsRemaining = 10,
     /// Unstaking a contract with zero value
-    UnstakingWithNoValue,
+    UnstakingWithNoValue = 11,
     /// There are no previously unbonded funds that can be unstaked and withdrawn.
-    NothingToWithdraw,
+    NothingToWithdraw = 12,
     /// The contract is already registered by other account
-    AlreadyRegisteredContract,
+    AlreadyRegisteredContract = 13,
     /// User attempts to register with address which is not contract
-    ContractIsNotValid,
+    ContractIsNotValid = 14,
     /// This account was already used to register contract
-    AlreadyUsedDeveloperAccount,
+    AlreadyUsedDeveloperAccount = 15,
     /// Smart contract not owned by the account id.
-    NotOwnedContract,
+    NotOwnedContract = 16,
     /// Report issue on github if this is ever emitted
-    UnknownEraReward,
+    UnknownEraReward = 17,
     /// Report issue on github if this is ever emitted
-    UnexpectedStakeInfoEra,
+    UnexpectedStakeInfoEra = 18,
     /// Contract has too many unlocking chunks. Withdraw the existing chunks if possible
     /// or wait for current chunks to complete unlocking process to withdraw them.
-    TooManyUnlockingChunks,
+    TooManyUnlockingChunks = 19,
     /// Contract already claimed in this era and reward is distributed
-    AlreadyClaimedInThisEra,
+    AlreadyClaimedInThisEra = 20,
     /// Era parameter is out of bounds
-    EraOutOfBounds,
+    EraOutOfBounds = 21,
     /// Too many active `EraStake` values for (staker, contract) pairing.
     /// Claim existing rewards to fix this problem.
-    TooManyEraStakeValues,
+    TooManyEraStakeValues = 22,
     /// To register a contract, pre-approval is needed for this address
-    RequiredContractPreApproval,
+    RequiredContractPreApproval = 23,
     /// Developer's account is already part of pre-approved list
-    AlreadyPreApprovedDeveloper,
+    AlreadyPreApprovedDeveloper = 24,
     /// Account is not actively staking
-    NotActiveStaker,
+    NotActiveStaker = 25,
     /// Transfering nomination to the same contract
-    NominationTransferToSameContract,
+    NominationTransferToSameContract = 26,
     /// Unexpected reward destination value
-    RewardDestinationValueOutOfBounds,
+    RewardDestinationValueOutOfBounds = 27,
+    /// Failed to write result on buffer
+    FailedToWriteOnBuffer = 28,
+    /// Unknown error
+    UnknownError = 99,
 }
 
 impl ink_env::chain_extension::FromStatusCode for DSError {
     fn from_status_code(status_code: u32) -> Result<(), Self> {
         match status_code {
             0 => Ok(()),
+            1 => Err(Self::Disabled),
+            2 => Err(Self::NoMaintenanceModeChange),
+            3 => Err(Self::UpgradeTooHeavy),
+            4 => Err(Self::StakingWithNoValue),
+            5 => Err(Self::InsufficientValue),
+            6 => Err(Self::MaxNumberOfStakersExceeded),
+            7 => Err(Self::NotOperatedContract),
+            8 => Err(Self::NotStakedContract),
+            9 => Err(Self::NotUnregisteredContract),
+            10 => Err(Self::UnclaimedRewardsRemaining),
+            11 => Err(Self::UnstakingWithNoValue),
+            12 => Err(Self::NothingToWithdraw),
+            13 => Err(Self::AlreadyRegisteredContract),
+            14 => Err(Self::ContractIsNotValid),
+            15 => Err(Self::AlreadyUsedDeveloperAccount),
+            16 => Err(Self::NotOwnedContract),
+            17 => Err(Self::UnknownEraReward),
+            18 => Err(Self::UnexpectedStakeInfoEra),
+            19 => Err(Self::TooManyUnlockingChunks),
+            20 => Err(Self::AlreadyClaimedInThisEra),
+            21 => Err(Self::EraOutOfBounds),
+            22 => Err(Self::TooManyEraStakeValues),
+            23 => Err(Self::RequiredContractPreApproval),
+            24 => Err(Self::AlreadyPreApprovedDeveloper),
+            25 => Err(Self::NotActiveStaker),
+            26 => Err(Self::NominationTransferToSameContract),
+            27 => Err(Self::RewardDestinationValueOutOfBounds),
+            28 => Err(Self::FailedToWriteOnBuffer),
+            99 => Err(Self::UnknownError),
             _ => panic!("encountered unknown status code"),
         }
     }

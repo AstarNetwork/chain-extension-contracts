@@ -6,12 +6,6 @@ use ink_lang as ink;
 pub mod staking_example {
     use dapps_staking_extension::*;
 
-    #[derive(scale::Encode, scale::Decode)]
-    #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
-    pub enum StakingError {
-        DsError(DSError),
-    }
-
     #[ink(storage)]
     pub struct Staking {}
 
@@ -57,33 +51,33 @@ pub mod staking_example {
         }
 
         #[ink(message)]
-        pub fn bond_and_stake(&mut self, contract: AccountId, value: Balance) -> Result<(), StakingError> {
-            DappsStaking::bond_and_stake(contract, value).map_err(|e| return StakingError::DsError(e))
+        pub fn bond_and_stake(&mut self, contract: AccountId, value: Balance) -> Result<(), DSError> {
+            DappsStaking::bond_and_stake(contract, value)
         }
 
         #[ink(message)]
-        pub fn unbond_and_unstake(&mut self, contract: AccountId, value: Balance) -> Result<(), StakingError> {
-            DappsStaking::unbond_and_unstake(contract, value).map_err(|e| return StakingError::DsError(e))
+        pub fn unbond_and_unstake(&mut self, contract: AccountId, value: Balance) -> Result<(), DSError> {
+            DappsStaking::unbond_and_unstake(contract, value)
         }
 
         #[ink(message)]
-        pub fn withdraw_unbonded(&mut self) -> Result<(), StakingError> {
-            DappsStaking::withdraw_unbonded().map_err(|e| return StakingError::DsError(e))
+        pub fn withdraw_unbonded(&mut self) -> Result<(), DSError> {
+            DappsStaking::withdraw_unbonded()
         }
 
         #[ink(message)]
-        pub fn claim_dapp(&mut self, account_id: AccountId, era: u32) -> Result<(), StakingError> {
-            DappsStaking::claim_dapp(account_id, era).map_err(|e| return StakingError::DsError(e))
+        pub fn claim_dapp(&mut self, account_id: AccountId, era: u32) -> Result<(), DSError> {
+            DappsStaking::claim_dapp(account_id, era)
         }
 
         #[ink(message)]
-        pub fn claim_staker(&mut self, account_id: AccountId) -> Result<(), StakingError> {
-            DappsStaking::claim_staker(account_id).map_err(|e| return StakingError::DsError(e))
+        pub fn claim_staker(&mut self, account_id: AccountId) -> Result<(), DSError> {
+            DappsStaking::claim_staker(account_id)
         }
 
         #[ink(message)]
-        pub fn set_reward_destination(&mut self, destination: u8) -> Result<(), StakingError> {
-            DappsStaking::set_reward_destination(destination).map_err(|e| return StakingError::DsError(e))
+        pub fn set_reward_destination(&mut self, destination: u8) -> Result<(), DSError> {
+            DappsStaking::set_reward_destination(destination)
         }
 
         #[ink(message)]
@@ -92,9 +86,8 @@ pub mod staking_example {
             origin_contract: AccountId,
             target_contract: AccountId,
             value: Balance,
-        ) -> Result<(), StakingError> {
+        ) -> Result<(), DSError> {
             DappsStaking::nomination_transfer(origin_contract, target_contract, value)
-                .map_err(|e| return StakingError::DsError(e))
         }
     }
 }
