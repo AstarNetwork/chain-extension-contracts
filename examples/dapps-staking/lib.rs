@@ -50,9 +50,10 @@ pub mod staking_example {
             DappsStaking::read_contract_stake(account)
         }
 
-        #[ink(message)]
-        pub fn bond_and_stake(&mut self, contract: AccountId, value: Balance) -> Result<(), DSError> {
-            DappsStaking::bond_and_stake(contract, value)
+        #[ink(message, payable)]
+        pub fn bond_and_stake(&mut self, contract: AccountId) -> Result<(), DSError> {
+            ink_env::debug_print!("bondandstake {:?} [{:?}]", contract, self.env().transferred_value());
+            DappsStaking::bond_and_stake(contract, self.env().transferred_value())
         }
 
         #[ink(message)]
