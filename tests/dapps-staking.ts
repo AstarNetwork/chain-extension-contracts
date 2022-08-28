@@ -4,6 +4,7 @@ import { expect } from "./setup/chai";
 import { Option } from '@polkadot/types';
 import { buildTx } from '@redspot/patract/buildTx'
 import { AccountLedger, EraInfo, EraStakingPointsIndividualClaim, GeneralStakerInfo } from "./types";
+import { BigNumber } from '@redspot/patract/types';
 const { api } = network
 
 describe('DAPPS STAKING', () => {
@@ -91,17 +92,10 @@ describe('DAPPS STAKING', () => {
         // register contract
         await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
 
-        const stakingAmount = 20;
-        console.log("stakingAmount", stakingAmount, one.muln(stakingAmount) );
         // Bob sends funds to contract. Contract calls bondAndStake on pallet
-        await contract.connect(bob).tx.bondAndStake(contract.address, { value: one.muln(stakingAmount) })
-        console.log("contract.address", contract.address.toString())
+        const stakingAmount = one.muln(50);
+        await contract.connect(bob).tx.bondAndStake(contract.address, { value: stakingAmount })
 
-        const currentEra = await api.query.dappsStaking.currentEra()
-        console.log("currentEra", currentEra.toHuman())
-        const generalEraInfo = (await api.query.dappsStaking.generalEraInfo<Option<EraInfo>>(currentEra))?.unwrapOrDefault()
-        console.log("eraStaked total", generalEraInfo.staked.toHuman())
-        
         // verify contract's stake
         const generalStakerInfo = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
             contract.address,
@@ -109,9 +103,11 @@ describe('DAPPS STAKING', () => {
                 Wasm: contract.address,
             }
         );
-        console.log("generalStakerInfo(contract.address)", generalStakerInfo.stakes[generalStakerInfo.stakes.length - 1].staked.toHuman())
 
-        expect(generalStakerInfo.stakes[generalStakerInfo.stakes.length - 1].staked.toBn()).to.equal(one.muln(stakingAmount))
+        // const minimumRemainingAmount = api.consts.dappsStaking.minimumRemainingAmount;TODO fix BN
+        const minimumRemainingAmount = one;
+        const expectedStakingAmount = stakingAmount.sub(minimumRemainingAmount);
+        expect(generalStakerInfo.stakes[generalStakerInfo.stakes.length - 1].staked.toBn()).to.equal(stakingAmount.sub(minimumRemainingAmount))
 
         // verify that Bob did not directly stake. It is contract that staked in the Bob's name
         const bobStakerInfo = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
