@@ -119,25 +119,51 @@ describe('DAPPS STAKING', () => {
         expect(bobStakerInfo.stakes.length).to.equal(0)
     })
 
-    // it('should unbond and unstake on contract', async () => {
-    //     const {contract, one, defaultSigner} = await setup()
+    it('should unbond and unstake on contract', async () => {
+        const {contract, one, bob, defaultSigner} = await setup();
 
-    //     // register & bond 1000 on contract
-    //     await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
-    //     await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(1000)), defaultSigner.address)
+        // register & Bob sends 1000 on contract to be staked
+        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address);
+        const stakingAmount = one.muln(1000);
+        await contract.connect(bob).tx.bondAndStake(contract.address, { value: stakingAmount });
+        
+        // unbond & unstake 600
+        const unbondAmount = one.muln(600);
+        await contract.connect(bob).tx.unbondAndUnstake(contract.address, unbondAmount);
 
-    //     // unbond & unstake 600
-    //     await contract.tx.unbondAndUnstake(contract.address, one.muln(600))
+        // verify contract stake is decreased by 600, and now is 400
+        const generalStakerInfo = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
+            contract.address,
+            {
+                Wasm: contract.address,
+            }
+        );
+        expect(generalStakerInfo.stakes).not.equal([]);
+        expect(generalStakerInfo.stakes[generalStakerInfo.stakes.length - 1].staked.toBn()).to.equal(stakingAmount.sub(unbondAmount).sub(one));
+    })
 
-    //     // verify stake
-    //     const generalStakerInfo = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
-    //         defaultSigner.address,
-    //         {
-    //             Wasm: contract.address,
-    //         }
-    //     );
-    //     expect(generalStakerInfo.stakes[generalStakerInfo.stakes.length - 1].staked.toBn()).to.equal(one.muln(400))
-    // })
+    it('should not unbond and unstake for Alice', async () => {
+        const {contract, one, bob, alice, defaultSigner} = await setup();
+
+        // register & Bob sends 1000 on contract to be staked
+        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address);
+        const stakingAmount = one.muln(1000);
+        await contract.connect(bob).tx.bondAndStake(contract.address, { value: stakingAmount });
+        
+        // Alice tries to unbond & unstake 600. Alice is not a staker
+        const unbondAmount = one.muln(600);
+        await contract.connect(alice).tx.unbondAndUnstake(contract.address, unbondAmount);
+
+        // verify contract stake is decreased by 600, and now is 400
+        const generalStakerInfo = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
+            contract.address,
+            {
+                Wasm: contract.address,
+            }
+        );
+        expect(generalStakerInfo.stakes).not.equal([]);
+        expect(generalStakerInfo.stakes[generalStakerInfo.stakes.length - 1].staked.toBn()).to.equal(stakingAmount.sub(one));
+    })
 
     // it('should withdraw unbonded', async () => {
     //     const {contract, one, alice, bob, defaultSigner} = await setup()

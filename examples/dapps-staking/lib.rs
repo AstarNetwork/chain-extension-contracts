@@ -55,9 +55,10 @@ pub mod staking_example {
             ink_env::debug_print!("bondandstake {:?} [{:?}]", contract, self.env().transferred_value());
             DappsStaking::bond_and_stake(contract, self.env().transferred_value())
         }
-
+        
         #[ink(message)]
         pub fn unbond_and_unstake(&mut self, contract: AccountId, value: Balance) -> Result<(), DSError> {
+            ink_env::debug_print!("unbond_and_unstake {:?} [{:?}]", contract, value);
             DappsStaking::unbond_and_unstake(contract, value)
         }
 
