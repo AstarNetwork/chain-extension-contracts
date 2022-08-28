@@ -12,80 +12,80 @@ describe('DAPPS STAKING', () => {
         return await setupContract('staking_example', 'new')
     }
 
-    // it('should read current era', async () => {
-    //     const {contract} = await setup()
+    it('should read current era', async () => {
+        const {contract} = await setup()
 
-    //     const currentEra = await api.query.dappsStaking.currentEra()
-    //     await expect(contract.query.readCurrentEra()).to.output(currentEra)
-    // })
+        const currentEra = await api.query.dappsStaking.currentEra()
+        await expect(contract.query.readCurrentEra()).to.output(currentEra)
+    })
 
-    // it('should read unbonding period', async () => {
-    //     const {contract} = await setup()
+    it('should read unbonding period', async () => {
+        const {contract} = await setup()
 
-    //     const bondingDuration = api.consts.dappsStaking.unbondingPeriod
-    //     await expect(contract.query.readUnbondingPeriod()).to.output(bondingDuration)
-    // })
+        const bondingDuration = api.consts.dappsStaking.unbondingPeriod
+        await expect(contract.query.readUnbondingPeriod()).to.output(bondingDuration)
+    })
 
-    // it('should read era reward', async () => {
-    //     const {contract, defaultSigner, one} = await setup()
+    it('should read era reward', async () => {
+        const {contract, defaultSigner, one} = await setup()
 
-    //     await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
-    //     await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
 
-    //     const currentEra = await api.query.dappsStaking.currentEra()
-    //     const generalEraInfo = (await api.query.dappsStaking.generalEraInfo<Option<EraInfo>>(currentEra))?.unwrapOrDefault()
-    //     // @ts-ignore
-    //     await expect(contract.query.readEraReward(currentEra)).to.output(generalEraInfo.rewards.dapps + generalEraInfo.rewards.stakers)
-    // })
+        const currentEra = await api.query.dappsStaking.currentEra()
+        const generalEraInfo = (await api.query.dappsStaking.generalEraInfo<Option<EraInfo>>(currentEra))?.unwrapOrDefault()
+        // @ts-ignore
+        await expect(contract.query.readEraReward(currentEra)).to.output(generalEraInfo.rewards.dapps + generalEraInfo.rewards.stakers)
+    })
 
-    // it('should read era staked', async () => {
-    //     const {contract, defaultSigner, one} = await setup()
+    it('should read era staked', async () => {
+        const {contract, defaultSigner, one} = await setup()
 
-    //     await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
-    //     await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
 
-    //     const currentEra = await api.query.dappsStaking.currentEra()
-    //     const generalEraInfo = (await api.query.dappsStaking.generalEraInfo<Option<EraInfo>>(currentEra))?.unwrapOrDefault()
-    //     await expect(contract.query.readEraStaked(currentEra)).to.output(generalEraInfo.staked)
-    // })
+        const currentEra = await api.query.dappsStaking.currentEra()
+        const generalEraInfo = (await api.query.dappsStaking.generalEraInfo<Option<EraInfo>>(currentEra))?.unwrapOrDefault()
+        await expect(contract.query.readEraStaked(currentEra)).to.output(generalEraInfo.staked)
+    })
 
-    // it('should read contract stake', async () => {
-    //     const {contract, defaultSigner, one} = await setup()
+    it('should read contract stake', async () => {
+        const {contract, defaultSigner, one} = await setup()
 
-    //     await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
-    //     await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
 
-    //     const ledger = await api.query.dappsStaking.ledger(defaultSigner.address)
-    //     // @ts-ignore
-    //     await expect(contract.query.readStakedAmount(defaultSigner.address)).to.output(ledger.locked)
-    // })
+        const ledger = await api.query.dappsStaking.ledger(defaultSigner.address)
+        // @ts-ignore
+        await expect(contract.query.readStakedAmount(defaultSigner.address)).to.output(ledger.locked)
+    })
 
-    // it('should read staked amount on contract', async () => {
-    //     const {contract, defaultSigner, one} = await setup()
+    it('should read staked amount on contract', async () => {
+        const {contract, defaultSigner, one} = await setup()
 
-    //     await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
-    //     await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
 
-    //     const generalStakerInfo = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
-    //         defaultSigner.address,
-    //         {
-    //             Wasm: contract.address,
-    //         }
-    //     );
-    //     await expect(contract.query.readStakedAmountOnContract(defaultSigner.address, contract.address))
-    //         .to.output(generalStakerInfo.stakes[generalStakerInfo.stakes.length - 1].staked)
-    // })
+        const generalStakerInfo = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
+            defaultSigner.address,
+            {
+                Wasm: contract.address,
+            }
+        );
+        await expect(contract.query.readStakedAmountOnContract(defaultSigner.address, contract.address))
+            .to.output(generalStakerInfo.stakes[generalStakerInfo.stakes.length - 1].staked)
+    })
 
-    // it('should read contract stake', async () => {
-    //     const {contract, one, defaultSigner} = await setup()
+    it('should read contract stake', async () => {
+        const {contract, one, defaultSigner} = await setup()
 
-    //     await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
-    //     await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
+        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
 
-    //     const currentEra = await api.query.dappsStaking.currentEra()
-    //     const contractStake = (await api.query.dappsStaking.contractEraStake<Option<EraStakingPointsIndividualClaim>>({Wasm: contract.address}, currentEra))?.unwrapOrDefault();
-    //     await expect(contract.query.readContractStake(contract.address)).to.output(contractStake.total)
-    // })
+        const currentEra = await api.query.dappsStaking.currentEra()
+        const contractStake = (await api.query.dappsStaking.contractEraStake<Option<EraStakingPointsIndividualClaim>>({Wasm: contract.address}, currentEra))?.unwrapOrDefault();
+        await expect(contract.query.readContractStake(contract.address)).to.output(contractStake.total)
+    })
 
     it('should bond and stake on contract', async () => {
         const { contract, one, alice, bob, defaultSigner } = await setup()
@@ -165,35 +165,62 @@ describe('DAPPS STAKING', () => {
         expect(generalStakerInfo.stakes[generalStakerInfo.stakes.length - 1].staked.toBn()).to.equal(stakingAmount.sub(one));
     })
 
-    // it('should withdraw unbonded', async () => {
-    //     const {contract, one, alice, bob, defaultSigner} = await setup()
+    it('should withdraw unbonded', async () => {
+        const {contract, one, alice, bob, defaultSigner} = await setup()
 
-    //     const bondingDuration = api.consts.dappsStaking.unbondingPeriod
+        const bondingDuration = api.consts.dappsStaking.unbondingPeriod
 
-    //     // register & bond 50000 on contract
-    //     await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
-    //     await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(50000)), bob.address)
+        // register & Bob sends funds on contract to be staked
+        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
+        const stakingAmount = one.muln(50000);
+        await contract.connect(bob).tx.bondAndStake(contract.address, { value: stakingAmount });
 
-    //     // @ts-ignore
-    //     await forceEras(bondingDuration + 1, alice)
+        // @ts-ignore
+        await forceEras(1, alice)
 
-    //     await buildTx(api.registry, api.tx.dappsStaking.unbondAndUnstake({ Wasm: contract.address }, one.muln(50000)), bob.address)
+        await contract.connect(bob).tx.unbondAndUnstake(contract.address, stakingAmount);
 
-    //     // @ts-ignore
-    //     await forceEras(bondingDuration + 1, alice)
+        // @ts-ignore
+        await forceEras(bondingDuration + 1, alice)
 
-    //     const balanceBefore = await api.query.system.account(bob.address)
-    //     // @ts-ignore
-    //     expect(balanceBefore.data.reserved).to.not.equal(balanceBefore.data.free)
+        const balanceBefore = await api.query.system.account(bob.address)
+        // @ts-ignore
+        expect(balanceBefore.data.reserved).to.not.equal(balanceBefore.data.free)
 
-    //     await contract.connect(bob).tx.withdrawUnbonded()
+        await contract.connect(bob).tx.withdrawUnbonded()
 
-    //     const balanceAfter = await api.query.system.account(bob.address)
-    //     // @ts-ignore
-    //     expect(balanceAfter.data.reserved).to.not.equal(balanceAfter.data.free)
-    //     // @ts-ignore
-    //     expect(balanceAfter.data.reserved).to.equal(0)
-    // })
+        const balanceAfter = await api.query.system.account(bob.address)
+        // @ts-ignore
+        expect(balanceAfter.data.reserved).to.not.equal(balanceAfter.data.free)
+        // @ts-ignore
+        expect(balanceAfter.data.reserved).to.equal(0)
+    })
+
+    it('Alice fails to withdraw what Bob staked', async () => {
+        const {contract, one, alice, bob, defaultSigner} = await setup()
+
+        const bondingDuration = api.consts.dappsStaking.unbondingPeriod
+
+        // register & Bob sends funds on contract to be staked
+        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
+        const stakingAmount = one.muln(50000);
+        await contract.connect(bob).tx.bondAndStake(contract.address, { value: stakingAmount })
+
+        // @ts-ignore
+        await forceEras(1, alice)
+
+        await contract.connect(bob).tx.unbondAndUnstake(contract.address, stakingAmount)
+
+        // @ts-ignore
+        await forceEras(bondingDuration + 1, alice)
+
+        // Alice tries to call withdrawUnbonded although she did not stake/unstake
+        const balanceBefore = await api.query.system.account(alice.address)
+        await contract.connect(alice).tx.withdrawUnbonded()
+        const balanceAfter = await api.query.system.account(alice.address)
+        // @ts-ignore
+        expect(balanceAfter.data.free).to.equal(balanceBefore.data.free)
+    })
 
     // it('should claim staker', async () => {
     //     const {contract, one, alice, defaultSigner} = await setup()
