@@ -52,18 +52,23 @@ pub mod staking_example {
 
         #[ink(message, payable)]
         pub fn bond_and_stake(&mut self, contract: AccountId) -> Result<(), DSError> {
-            ink_env::debug_print!("bondandstake {:?} [{:?}]", contract, self.env().transferred_value());
-            DappsStaking::bond_and_stake(contract, self.env().transferred_value())
+            // make sure the caller is recorded as staker
+
+            let value = self.env().transferred_value();
+            DappsStaking::bond_and_stake(contract, value)
         }
-        
+
         #[ink(message)]
         pub fn unbond_and_unstake(&mut self, contract: AccountId, value: Balance) -> Result<(), DSError> {
-            ink_env::debug_print!("unbond_and_unstake {:?} [{:?}]", contract, value);
+            // make sure caller is the staker
+
             DappsStaking::unbond_and_unstake(contract, value)
         }
 
         #[ink(message)]
         pub fn withdraw_unbonded(&mut self) -> Result<(), DSError> {
+            // make sure caller has staked what is withdrawn
+
             DappsStaking::withdraw_unbonded()
         }
 
@@ -73,8 +78,9 @@ pub mod staking_example {
         }
 
         #[ink(message)]
-        pub fn claim_staker(&mut self, account_id: AccountId) -> Result<(), DSError> {
-            DappsStaking::claim_staker(account_id)
+        pub fn claim_staker(&mut self) -> Result<(), DSError> {
+            let contract = self.env().account_id();
+            DappsStaking::claim_staker(contract)
         }
 
         #[ink(message)]
