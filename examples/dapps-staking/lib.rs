@@ -51,17 +51,19 @@ pub mod staking_example {
         }
 
         #[ink(message, payable)]
-        pub fn bond_and_stake(&mut self, contract: AccountId) -> Result<(), DSError> {
+        pub fn bond_and_stake(&mut self) -> Result<(), DSError> {
             // make sure the caller is recorded as staker
 
+            let contract = self.env().account_id();
             let value = self.env().transferred_value();
             DappsStaking::bond_and_stake(contract, value)
         }
 
         #[ink(message)]
-        pub fn unbond_and_unstake(&mut self, contract: AccountId, value: Balance) -> Result<(), DSError> {
+        pub fn unbond_and_unstake(&mut self, value: Balance) -> Result<(), DSError> {
             // make sure caller is the staker
 
+            let contract = self.env().account_id();
             DappsStaking::unbond_and_unstake(contract, value)
         }
 
@@ -86,16 +88,6 @@ pub mod staking_example {
         #[ink(message)]
         pub fn set_reward_destination(&mut self, destination: u8) -> Result<(), DSError> {
             DappsStaking::set_reward_destination(destination)
-        }
-
-        #[ink(message)]
-        pub fn nomination_transfer(
-            &mut self,
-            origin_contract: AccountId,
-            target_contract: AccountId,
-            value: Balance,
-        ) -> Result<(), DSError> {
-            DappsStaking::nomination_transfer(origin_contract, target_contract, value)
         }
     }
 }

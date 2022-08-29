@@ -92,7 +92,7 @@ describe('DAPPS STAKING', () => {
         // register & Bob sends funds on contract to be staked
         await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
         const stakingAmount = one.muln(50);
-        await contract.connect(bob).tx.bondAndStake(contract.address, { value: stakingAmount })
+        await contract.connect(bob).tx.bondAndStake({ value: stakingAmount })
 
         // verify contract's stake
         const generalStakerInfo = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
@@ -122,11 +122,11 @@ describe('DAPPS STAKING', () => {
         // register & Bob sends funds on contract to be staked
         await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address);
         const stakingAmount = one.muln(1000);
-        await contract.connect(bob).tx.bondAndStake(contract.address, { value: stakingAmount });
+        await contract.connect(bob).tx.bondAndStake({ value: stakingAmount });
 
         // unbond & unstake 600
         const unbondAmount = one.muln(600);
-        await contract.connect(bob).tx.unbondAndUnstake(contract.address, unbondAmount);
+        await contract.connect(bob).tx.unbondAndUnstake(unbondAmount);
 
         // verify contract stake is decreased by 600, and now is 400
         const generalStakerInfo = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
@@ -147,12 +147,12 @@ describe('DAPPS STAKING', () => {
         // register & Bob sends funds on contract to be staked
         await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
         const stakingAmount = one.muln(50000);
-        await contract.connect(bob).tx.bondAndStake(contract.address, { value: stakingAmount });
+        await contract.connect(bob).tx.bondAndStake({ value: stakingAmount });
 
         // @ts-ignore
         await forceEras(1, alice)
 
-        await contract.connect(bob).tx.unbondAndUnstake(contract.address, stakingAmount);
+        await contract.connect(bob).tx.unbondAndUnstake(stakingAmount);
 
         // @ts-ignore
         await forceEras(bondingDuration + 1, alice)
@@ -176,7 +176,7 @@ describe('DAPPS STAKING', () => {
         // register & Bob sends funds on contract to be staked
         await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
         const stakingAmount = one.muln(50000);
-        await contract.connect(bob).tx.bondAndStake(contract.address, { value: stakingAmount });
+        await contract.connect(bob).tx.bondAndStake({ value: stakingAmount });
 
         // advance 4 eras
         await forceEras(4, alice)
@@ -230,7 +230,7 @@ describe('DAPPS STAKING', () => {
         // register & Bob sends funds on contract to be staked
         await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
         const stakingAmount = one.muln(50000);
-        await contract.connect(bob).tx.bondAndStake(contract.address, { value: stakingAmount });
+        await contract.connect(bob).tx.bondAndStake({ value: stakingAmount });
 
         // by default is set to StakeBalance
         const ledger = await api.query.dappsStaking.ledger<AccountLedger>(contract.address)
