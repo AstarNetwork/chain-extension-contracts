@@ -89,5 +89,15 @@ pub mod staking_example {
         pub fn set_reward_destination(&mut self, destination: u8) -> Result<(), DSError> {
             DappsStaking::set_reward_destination(destination)
         }
+
+        #[ink(message)]
+        pub fn nomination_transfer(
+            &mut self,
+            origin_contract: AccountId,
+            target_contract: AccountId,
+            value: Balance,
+        ) -> Result<(), DSError> {
+            DappsStaking::nomination_transfer(origin_contract, target_contract, value)
+        }
     }
 }
