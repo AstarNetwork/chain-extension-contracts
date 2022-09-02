@@ -23,7 +23,7 @@
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.1.0",
-    "redspot": "^0.13.5",
+    "redspot": "^0.13.6",
     "ts-node": "^10.8.0"
   },
   "scripts": {
