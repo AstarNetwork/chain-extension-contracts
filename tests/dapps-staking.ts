@@ -7,7 +7,7 @@ import { AccountLedger, EraInfo, EraStakingPointsIndividualClaim, GeneralStakerI
 const { api } = network
 
 describe('DAPPS STAKING', () => {
-    async function setup() {
+    async function setup () {
         return await setupContract('staking_example', 'new')
     }
 
@@ -26,9 +26,10 @@ describe('DAPPS STAKING', () => {
     })
 
     it('should read era reward', async () => {
-        const { contract, defaultSigner, one } = await setup()
+        const { contract, defaultSigner, one, alice } = await setup()
 
-        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
+        // @ts-ignore
+        await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(defaultSigner.address, { Wasm: contract.address })), alice);
         await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
 
         const currentEra = await api.query.dappsStaking.currentEra()
@@ -38,10 +39,10 @@ describe('DAPPS STAKING', () => {
     })
 
     it('should read era staked', async () => {
-        const { contract, defaultSigner, one } = await setup()
+        const { contract, defaultSigner, one, alice } = await setup()
 
-        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
-        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
+        // @ts-ignore
+        await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(defaultSigner.address, { Wasm: contract.address })), alice); await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
 
         const currentEra = await api.query.dappsStaking.currentEra()
         const generalEraInfo = (await api.query.dappsStaking.generalEraInfo<Option<EraInfo>>(currentEra))?.unwrapOrDefault()
@@ -49,10 +50,10 @@ describe('DAPPS STAKING', () => {
     })
 
     it('should read contract stake', async () => {
-        const { contract, defaultSigner, one } = await setup()
+        const { contract, defaultSigner, one, alice } = await setup()
 
-        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
-        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
+        // @ts-ignore
+        await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(defaultSigner.address, { Wasm: contract.address })), alice); await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
 
         const ledger = await api.query.dappsStaking.ledger(defaultSigner.address)
         // @ts-ignore
@@ -60,10 +61,10 @@ describe('DAPPS STAKING', () => {
     })
 
     it('should read staked amount on contract', async () => {
-        const { contract, defaultSigner, one } = await setup()
+        const { contract, defaultSigner, one, alice } = await setup()
 
-        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
-        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
+        // @ts-ignore
+        await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(defaultSigner.address, { Wasm: contract.address })), alice); await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
 
         const generalStakerInfo = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
             defaultSigner.address,
@@ -76,10 +77,10 @@ describe('DAPPS STAKING', () => {
     })
 
     it('should read contract stake', async () => {
-        const { contract, one, defaultSigner } = await setup()
+        const { contract, one, defaultSigner, alice } = await setup()
 
-        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
-        await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
+        // @ts-ignore
+        await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(defaultSigner.address, { Wasm: contract.address })), alice); await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(10000)), defaultSigner.address)
 
         const currentEra = await api.query.dappsStaking.currentEra()
         const contractStake = (await api.query.dappsStaking.contractEraStake<Option<EraStakingPointsIndividualClaim>>({ Wasm: contract.address }, currentEra))?.unwrapOrDefault();
@@ -87,10 +88,11 @@ describe('DAPPS STAKING', () => {
     })
 
     it('should bond and stake on contract', async () => {
-        const { contract, one, bob, defaultSigner } = await setup()
+        const { contract, one, bob, defaultSigner, alice } = await setup()
 
         // register & Bob sends funds on contract to be staked
-        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
+        // @ts-ignore
+        await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(defaultSigner.address, { Wasm: contract.address })), alice);
         const stakingAmount = one.muln(50000);
         await contract.connect(bob).tx.bondAndStake({ value: stakingAmount })
 
@@ -117,10 +119,11 @@ describe('DAPPS STAKING', () => {
     })
 
     it('should unbond and unstake on contract', async () => {
-        const { contract, one, bob, defaultSigner } = await setup();
+        const { contract, one, bob, defaultSigner, alice } = await setup();
 
         // register & Bob sends funds on contract to be staked
-        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address);
+        // @ts-ignore
+        await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(defaultSigner.address, { Wasm: contract.address })), alice);
         const stakingAmount = one.muln(1000);
         await contract.connect(bob).tx.bondAndStake({ value: stakingAmount });
 
@@ -145,7 +148,8 @@ describe('DAPPS STAKING', () => {
         const bondingDuration = api.consts.dappsStaking.unbondingPeriod
 
         // register & Bob sends funds on contract to be staked
-        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
+        // @ts-ignore
+        await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(defaultSigner.address, { Wasm: contract.address })), alice);
         const stakingAmount = one.muln(50000);
         await contract.connect(bob).tx.bondAndStake({ value: stakingAmount });
 
@@ -174,7 +178,8 @@ describe('DAPPS STAKING', () => {
         const { contract, one, bob, alice, defaultSigner } = await setup()
 
         // register & Bob sends funds on contract to be staked
-        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
+        // @ts-ignore
+        await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(defaultSigner.address, { Wasm: contract.address })), alice);
         const stakingAmount = one.muln(50000);
         await contract.connect(bob).tx.bondAndStake({ value: stakingAmount });
 
@@ -225,10 +230,11 @@ describe('DAPPS STAKING', () => {
     // })
 
     it('should update reward destination', async () => {
-        const { contract, bob, defaultSigner, one } = await setup()
+        const { contract, bob, defaultSigner, one, alice } = await setup()
 
         // register & Bob sends funds on contract to be staked
-        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
+        // @ts-ignore
+        await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(defaultSigner.address, { Wasm: contract.address })), alice);
         const stakingAmount = one.muln(50000);
         await contract.connect(bob).tx.bondAndStake({ value: stakingAmount });
 
@@ -251,8 +257,10 @@ describe('DAPPS STAKING', () => {
         const { contract: contract2 } = await setup()
 
         // register both contracts & stake in the first one
-        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
-        await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract2.address }), bob.address)
+        // @ts-ignore
+        await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(defaultSigner.address, { Wasm: contract.address })), alice);
+        // @ts-ignore
+        await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(bob.address, { Wasm: contract2.address })), alice);
         const stakingAmount = one.muln(50000);
         const transferAmount = one.muln(1000)
         // @ts-ignore
