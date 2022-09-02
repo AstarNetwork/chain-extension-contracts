@@ -183,7 +183,7 @@ describe('DAPPS STAKING', () => {
         const stakingAmount = one.muln(50000);
         await contract.connect(bob).tx.bondAndStake({ value: stakingAmount });
 
-        // advance 4 eras
+        // advance a few eras to accummulate rewards
         await forceEras(4, alice)
 
         // claim staker's reward
@@ -196,38 +196,39 @@ describe('DAPPS STAKING', () => {
         expect(balanceBefore.data.free).is.below(balanceAfter.data.free)
     })
 
-    // it('should claim dapp', async () => {
-    //     const {contract, one, alice, defaultSigner} = await setup()
+    it('should claim dapp', async () => {
+        const { contract, one, bob, alice, defaultSigner } = await setup()
 
-    //     // register & bond 50000 on contract
-    //     await buildTx(api.registry, api.tx.dappsStaking.register({ Wasm: contract.address }), defaultSigner.address)
-    //     await buildTx(api.registry, api.tx.dappsStaking.bondAndStake({ Wasm: contract.address }, one.muln(50000)), alice.address)
+        // register & Bob sends funds on contract to be staked
+        // @ts-ignore
+        await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(defaultSigner.address, { Wasm: contract.address })), alice);
+        const stakingAmount = one.muln(50000);
+        await contract.connect(bob).tx.bondAndStake({ value: stakingAmount });
 
-    //     const bondingDuration = api.consts.dappsStaking.unbondingPeriod
-    //     // @ts-ignore
-    //     await forceEras(bondingDuration + 1, alice)
+        // advance an era to be eligible for era reward
+        await forceEras(2, alice)
 
-    //     const balanceBefore = await api.query.system.account(defaultSigner.address)
-    //     const currentEra = await api.query.dappsStaking.currentEra()
-    //     // @ts-ignore
-    //     const generalEraInfo = (await api.query.dappsStaking.generalEraInfo<Option<EraInfo>>(currentEra - 1))?.unwrapOrDefault()
-    //     // @ts-ignore
-    //     const contractStake = (await api.query.dappsStaking.contractEraStake<Option<EraStakingPointsIndividualClaim>>({Wasm: contract.address}, currentEra - 1))?.unwrapOrDefault();
-    //     // @ts-ignore
-    //     const theoricalrewards = contractStake.total / generalEraInfo.staked * generalEraInfo.rewards.dapps
+        const balanceBefore = await api.query.system.account(defaultSigner.address)
+        const currentEra = await api.query.dappsStaking.currentEra()
+        // @ts-ignore
+        const generalEraInfo = (await api.query.dappsStaking.generalEraInfo<Option<EraInfo>>(currentEra - 1))?.unwrapOrDefault()
+        // @ts-ignore
+        const contractStake = (await api.query.dappsStaking.contractEraStake<Option<EraStakingPointsIndividualClaim>>({ Wasm: contract.address }, currentEra - 1))?.unwrapOrDefault();
+        // @ts-ignore
+        const theoricalrewards = contractStake.total / generalEraInfo.staked * generalEraInfo.rewards.dapps
 
-    //     // @ts-ignore
-    //     await contract.tx.claimDapp(contract.address, currentEra - 1)
+        // @ts-ignore
+        await contract.tx.claimDapp(contract.address, currentEra - 1)
 
-    //     const balanceAfter = await api.query.system.account(defaultSigner.address)
-    //     // @ts-ignore
-    //     const actualRewards = balanceAfter.data.free - balanceBefore.data.free
+        const balanceAfter = await api.query.system.account(defaultSigner.address)
+        // @ts-ignore
+        const actualRewards = balanceAfter.data.free - balanceBefore.data.free
 
-    //     // should be theoretically just below (because of gas paid for tx)
-    //     expect(actualRewards).is.below(theoricalrewards)
-    //     // check that actualRewards is within a +3% range
-    //     expect(actualRewards * 1.03).is.above(theoricalrewards)
-    // })
+        // should be theoretically just below (because of gas paid for tx)
+        expect(actualRewards).is.below(theoricalrewards)
+        // check that actualRewards is within a +0.01% range
+        expect(actualRewards * 1.0001).is.above(theoricalrewards)
+    })
 
     it('should update reward destination', async () => {
         const { contract, bob, defaultSigner, one, alice } = await setup()
