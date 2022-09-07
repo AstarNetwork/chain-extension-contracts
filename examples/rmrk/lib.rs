@@ -13,7 +13,7 @@ mod rmrk {
 	impl RmrkExample {
 		#[ink(constructor)]
 		pub fn new() -> Self {
-			RmrkExample {}
+			Self {}
 		}
 
 		// READ functions
@@ -164,11 +164,13 @@ mod rmrk {
 			max: Option<u32>,
 			symbol: Vec<u8>,
 		) -> Result<(), RmrkError> {
-			Rmrk::create_collection(
+			let result = Rmrk::create_collection(
                 metadata,
                 max,
                 symbol,
-            )
+            );
+			ink_env::debug_println!("create collection result in contract {:?}", result);
+			result
 		}
 
 		#[ink(message)]
@@ -370,12 +372,38 @@ mod rmrk {
 		/// Imports `ink_lang` so we can use `#[ink::test]`.
 		use ink_lang as ink;
 
-		/// We test if the default constructor does its job.
 		#[ink::test]
-		fn default_works() {}
+        fn chain_extension_works() {
+            // given
+            struct MockedExtension;
+            impl ink_env::test::ChainExtension for MockedExtension {
+                /// The static function id of the chain extension.
+                fn func_id(&self) -> u32 {
+                    0x0001000F // create_collection()
+                }
 
-		/// We test a simple use case of our contract.
-		#[ink::test]
-		fn it_works() {}
+                /// The chain extension is called with the given input.
+                ///
+                /// Returns an error code and may fill the `output` buffer with a
+                /// SCALE encoded result. The error code is taken from the
+                /// `ink_env::chain_extension::FromStatusCode` implementation for
+                /// `DappsStakingResponseError`.
+                fn call(&mut self, _input: &[u8], output: &mut Vec<u8>) -> u32 {
+                    let ret: u32 = 1;
+                    scale::Encode::encode_to(&ret, output);
+                    0
+                }
+            }
+            ink_env::test::register_chain_extension(MockedExtension);
+            _create_collection();
+        }
+
+		fn _create_collection() {
+			let mut rmrk = RmrkExample::new();
+			let metadata = "ipfs://ipfs/QmTG9ekqrdMh3dsehLYjC19fUSmPR31Ds2h6Jd7LnMZ9c7";
+			let symbol = "ROO";
+			let crete_result = rmrk.create_collection(metadata.into(), None, symbol.into());
+			assert_eq!(crete_result.is_err(), true);
+		}
 	}
 }
