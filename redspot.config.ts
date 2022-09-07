@@ -35,7 +35,8 @@ export default {
     contract: {
         ink: {
             toolchain: 'nightly',
-            sources: ['examples/dapps-staking']
+            // sources: ['examples/dapps-staking']
+            sources: ['examples/rmrk']
         }
     },
     networks: {

@@ -3,7 +3,7 @@
 use ink_lang as ink;
 
 #[ink::contract]
-mod rmrk {
+mod rmrk_example {
     use ink_prelude::vec::Vec;
     use rmrk_extension::*;
 

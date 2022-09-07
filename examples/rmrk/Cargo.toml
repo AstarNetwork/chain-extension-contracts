@@ -1,5 +1,5 @@
 [package]
-name = "rmrk"
+name = "rmrk_example"
 version = "0.1.0"
 authors = ["[your_name] <[your_email]>"]
 edition = "2021"
@@ -18,7 +18,7 @@ scale-info = { version = "2", default-features = false, features = ["derive"], o
 rmrk_extension = { path = "../../crates/rmrk", default-features = false }
 
 [lib]
-name = "rmrk"
+name = "rmrk_example"
 path = "lib.rs"
 crate-type = [
 	# Used for normal contract Wasm blobs.
