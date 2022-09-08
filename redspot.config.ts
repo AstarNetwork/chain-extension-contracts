@@ -27,15 +27,6 @@ const types =   {
         PalletDappsStakingForcing: {
             _enum: ['NotForcing', 'ForceNew', 'ForceNone', 'ForceAlways']
         },
-        DappsStakingExtensionDsError: {
-            _enum: {
-              Disabled: null,
-              NoMaintenanceModeChange: null,
-              UpgradeTooHeavy: null,
-              StakingWithNoValue: null,
-              InsufficientValue: null,
-            },
-          },
     }
 }
 
