@@ -17,9 +17,7 @@ describe('DAPPS STAKING', () => {
             // register & Bob calls staking without funds
             // @ts-ignore
             await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(defaultSigner.address, { Wasm: contract.address })), alice);
-
-            let res = await contract.connect(bob).query.bondAndStake({ value: 0 })
-            console.log("Bond and stake result is", res, ".")
+            await expect(contract.connect(bob).query.bondAndStake({ value: 0 })).to.output({ Err: 'InsufficientValue' })
         })
 
 
