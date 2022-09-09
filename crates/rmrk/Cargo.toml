@@ -14,6 +14,7 @@ ink_storage = { version = "3", default-features = false }
 
 scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
 scale-info = { version = "2", default-features = false, features = ["derive"], optional = true }
+# rmrk-chain-extension-types = { git = "https://github.com/AstarNetwork/astar-frame", branch = "feature/rmrk-chain-extension", default-features = false }
 
 [lib]
 name = "rmrk_extension"

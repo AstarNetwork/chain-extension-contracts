@@ -10,6 +10,7 @@ const {getSigners} = network
 
 export const setupContract = async (name, constructor, ...args) => {
     await api.isReady
+    const unit = new BN('1')
     const one = new BN(10).pow(new BN(api.registry.chainDecimals[0]))
     const signers = await getSigners()
     const signer = await getRandomSigner(signers[0], one.muln(100000))
@@ -32,7 +33,8 @@ export const setupContract = async (name, constructor, ...args) => {
         abi,
         one,
         query: contract.query,
-        tx: contract.tx
+        tx: contract.tx,
+        unit
     }
 }
 

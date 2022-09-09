@@ -157,20 +157,21 @@ mod rmrk_example {
             )
 		}
 
-		#[ink(message)]
+		#[ink(message, payable)]
 		pub fn create_collection(
 			&mut self,
 			metadata: Vec<u8>,
 			max: Option<u32>,
 			symbol: Vec<u8>,
 		) -> Result<(), RmrkError> {
+			ink_env::debug_println!("create collection enter in contract {:?}", metadata);
 			let result = Rmrk::create_collection(
                 metadata,
                 max,
                 symbol,
             );
 			ink_env::debug_println!("create collection result in contract {:?}", result);
-			result
+			Ok(())
 		}
 
 		#[ink(message)]

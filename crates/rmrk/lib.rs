@@ -4,9 +4,48 @@ use ink_env::AccountId;
 use ink_prelude::vec::Vec;
 use scale::{Decode, Encode};
 
+// use rmrk_chain_extension_types::RmrkError;
+
+// #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+// #[derive(PartialEq, Eq, Copy, Clone, Encode, Decode, Debug)]
+// pub enum RmrkError {}
+
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 #[derive(PartialEq, Eq, Copy, Clone, Encode, Decode, Debug)]
-pub enum RmrkError {}
+pub enum RmrkError {
+    /// Error names should be descriptive.
+    Success,
+    /// Errors should have helpful documentation associated with them.
+    StorageOverflow,
+    TooLong,
+    NoAvailableCollectionId,
+    NoAvailableResourceId,
+    MetadataNotSet,
+    RecipientNotSet,
+    NoAvailableNftId,
+    NotInRange,
+    RoyaltyNotSet,
+    CollectionUnknown,
+    NoPermission,
+    NoWitness,
+    CollectionNotEmpty,
+    CollectionFullOrLocked,
+    CannotSendToDescendentOrSelf,
+    ResourceAlreadyExists,
+    EmptyResource,
+    TooManyRecursions,
+    NftIsLocked,
+    CannotAcceptNonOwnedNft,
+    CannotRejectNonOwnedNft,
+    CannotRejectNonPendingNft,
+    ResourceDoesntExist,
+    /// Accepting a resource that is not pending should fail
+    ResourceNotPending,
+    NonTransferable,
+    // Must unequip an item before sending (this only applies to the
+    // rmrk-equip pallet but the send operation lives in rmrk-core)
+    CannotSendEquippedItem,
+}
 
 impl From<scale::Error> for RmrkError {
 	fn from(_: scale::Error) -> Self {
@@ -14,11 +53,46 @@ impl From<scale::Error> for RmrkError {
 	}
 }
 
+// impl ink_env::chain_extension::FromStatusCode for RmrkError {
+// 	fn from_status_code(status_code: u32) -> Result<(), Self> {
+// 		match status_code {
+// 			0 => Ok(()),
+// 			_ => panic!("encountered unknown status code"),
+// 		}
+// 	}
+// }
+
 impl ink_env::chain_extension::FromStatusCode for RmrkError {
 	fn from_status_code(status_code: u32) -> Result<(), Self> {
 		match status_code {
 			0 => Ok(()),
-			_ => panic!("encountered unknown status code"),
+            1 => Err(Self::StorageOverflow),
+            2 => Err(Self::TooLong),
+            3 => Err(Self::NoAvailableCollectionId),
+            4 => Err(Self::NoAvailableResourceId),
+            5 => Err(Self::MetadataNotSet),
+            6 => Err(Self::RecipientNotSet),
+            7 => Err(Self::NoAvailableNftId),
+            8 => Err(Self::NotInRange),
+            9 => Err(Self::RoyaltyNotSet),
+            10 => Err(Self::CollectionUnknown),
+            11 => Err(Self::NoPermission),
+            12 => Err(Self::NoWitness),
+            13 => Err(Self::CollectionNotEmpty),
+            14 => Err(Self::CollectionFullOrLocked),
+            15 => Err(Self::CannotSendToDescendentOrSelf),
+            16 => Err(Self::ResourceAlreadyExists),
+            17 => Err(Self::EmptyResource),
+            18 => Err(Self::TooManyRecursions),
+            19 => Err(Self::NftIsLocked),
+            20 => Err(Self::CannotAcceptNonOwnedNft),
+            21 => Err(Self::CannotRejectNonOwnedNft),
+            22 => Err(Self::CannotRejectNonPendingNft),
+            23 => Err(Self::ResourceDoesntExist),
+            24 => Err(Self::ResourceNotPending),
+            25 => Err(Self::NonTransferable),
+            26 => Err(Self::CannotSendEquippedItem),
+			_ => panic!("RMRK contract encountered unknown status code"),
 		}
 	}
 }
@@ -320,7 +394,7 @@ impl Rmrk {
                 bool,
                 Option<Vec<ResourceTypes>>,
             )>()
-            .output::<Result<(), RmrkError>>()
+            .output::<()>()
             .handle_error_code::<RmrkError>()
             .call(&(
                 owner,
@@ -331,7 +405,7 @@ impl Rmrk {
                 metadata,
                 transferable,
                 resources,
-            ))?
+            ))
     }
 
     pub fn mint_nft_directly_to_nft(
@@ -355,7 +429,7 @@ impl Rmrk {
                 bool,
                 Option<Vec<ResourceTypes>>,
             )>()
-            .output::<Result<(), RmrkError>>()
+            .output::<()>()
             .handle_error_code::<RmrkError>()
             .call(&(
                 owner,
@@ -366,7 +440,7 @@ impl Rmrk {
                 metadata,
                 transferable,
                 resources,
-            ))?
+            ))
     }
 
     pub fn create_collection(
@@ -376,9 +450,9 @@ impl Rmrk {
     ) -> Result<(), RmrkError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001000F)
             .input::<(Vec<u8>, Option<u32>, Vec<u8>)>()
-            .output::<Result<(), RmrkError>>()
+            .output::<()>()
             .handle_error_code::<RmrkError>()
-            .call(&(metadata, max, symbol))?
+            .call(&(metadata, max, symbol))
     }
 
     pub fn burn_nft(
@@ -388,17 +462,17 @@ impl Rmrk {
     ) -> Result<(), RmrkError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010010)
             .input::<(CollectionId, NftId, u32)>()
-            .output::<Result<(), RmrkError>>()
+            .output::<()>()
             .handle_error_code::<RmrkError>()
-            .call(&(collection_id, nft_id, max_burns))?
+            .call(&(collection_id, nft_id, max_burns))
     }
 
     pub fn destroy_collection(collection_id: CollectionId) -> Result<(), RmrkError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010011)
             .input::<CollectionId>()
-            .output::<Result<(), RmrkError>>()
+            .output::<()>()
             .handle_error_code::<RmrkError>()
-            .call(&collection_id)?
+            .call(&collection_id)
     }
 
 	pub fn send(
@@ -408,9 +482,9 @@ impl Rmrk {
 	) -> Result<(), RmrkError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010012)
 			.input::<(CollectionId, NftId, AccountIdOrCollectionNftTuple)>()
-			.output::<Result<(), RmrkError>>()
+            .output::<()>()
 			.handle_error_code::<RmrkError>()
-			.call(&(collection_id, nft_id, new_owner))?
+			.call(&(collection_id, nft_id, new_owner))
 	}
 
 	pub fn accept_nft(
@@ -420,9 +494,9 @@ impl Rmrk {
 	) -> Result<(), RmrkError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010013)
 			.input::<(CollectionId, NftId, AccountIdOrCollectionNftTuple)>()
-			.output::<Result<(), RmrkError>>()
+            .output::<()>()
 			.handle_error_code::<RmrkError>()
-			.call(&(collection_id, nft_id, new_owner))?
+			.call(&(collection_id, nft_id, new_owner))
 	}
 
 	pub fn reject_nft(
@@ -431,9 +505,9 @@ impl Rmrk {
 	) -> Result<(), RmrkError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010014)
 			.input::<(CollectionId, NftId)>()
-			.output::<Result<(), RmrkError>>()
+            .output::<()>()
 			.handle_error_code::<RmrkError>()
-			.call(&(collection_id, nft_id))?
+			.call(&(collection_id, nft_id))
 	}
 
 	pub fn change_collection_issuer(
@@ -442,9 +516,9 @@ impl Rmrk {
 	) -> Result<(), RmrkError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010015)
 			.input::<(CollectionId, AccountId)>()
-			.output::<Result<(), RmrkError>>()
+            .output::<()>()
 			.handle_error_code::<RmrkError>()
-			.call(&(collection_id, new_issuer))?
+			.call(&(collection_id, new_issuer))
 	}
 
 	pub fn set_property(
@@ -460,22 +534,22 @@ impl Rmrk {
                 Vec<u8>,
                 Vec<u8>,
             )>()
-			.output::<Result<(), RmrkError>>()
+            .output::<()>()
 			.handle_error_code::<RmrkError>()
 			.call(&(
                 collection_id,
                 maybe_nft_id,
                 key,
                 value,
-            ))?
+            ))
 	}
 
 	pub fn lock_collection(collection_id: CollectionId) -> Result<(), RmrkError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010017)
 			.input::<CollectionId>()
-			.output::<Result<(), RmrkError>>()
+            .output::<()>()
 			.handle_error_code::<RmrkError>()
-			.call(&collection_id)?
+			.call(&collection_id)
 	}
 
 	pub fn add_basic_resource(
@@ -486,9 +560,9 @@ impl Rmrk {
 	) -> Result<(), RmrkError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010018)
         .input::<(CollectionId, NftId, BasicResource, ResourceId)>()
-        .output::<Result<(), RmrkError>>()
+        .output::<()>()
         .handle_error_code::<RmrkError>()
-        .call(&(collection_id, nft_id, resource, resource_id))?
+        .call(&(collection_id, nft_id, resource, resource_id))
 	}
 
 	pub fn add_composable_resource(
@@ -499,9 +573,9 @@ impl Rmrk {
 	) -> Result<(), RmrkError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0x00010019)
         .input::<(CollectionId, NftId, ComposableResource, ResourceId)>()
-        .output::<Result<(), RmrkError>>()
+        .output::<()>()
         .handle_error_code::<RmrkError>()
-        .call(&(collection_id, nft_id, resource, resource_id))?
+        .call(&(collection_id, nft_id, resource, resource_id))
 	}
 
 	pub fn add_slot_resource(
@@ -512,9 +586,9 @@ impl Rmrk {
 	) -> Result<(), RmrkError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001001A)
 			.input::<(CollectionId, NftId, SlotResource, ResourceId)>()
-			.output::<Result<(), RmrkError>>()
+            .output::<()>()
 			.handle_error_code::<RmrkError>()
-			.call(&(collection_id, nft_id, resource, resource_id))?
+			.call(&(collection_id, nft_id, resource, resource_id))
 	}
 
 	pub fn accept_resource(
@@ -524,9 +598,9 @@ impl Rmrk {
 	) -> Result<(), RmrkError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001001B)
 			.input::<(CollectionId, NftId, ResourceId)>()
-			.output::<Result<(), RmrkError>>()
+            .output::<()>()
 			.handle_error_code::<RmrkError>()
-			.call(&(collection_id, nft_id, resource_id))?
+			.call(&(collection_id, nft_id, resource_id))
 	}
 
 	pub fn remove_resource(
@@ -536,9 +610,9 @@ impl Rmrk {
 	) -> Result<(), RmrkError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001001C)
 			.input::<(CollectionId, NftId, ResourceId)>()
-			.output::<Result<(), RmrkError>>()
+            .output::<()>()
 			.handle_error_code::<RmrkError>()
-			.call(&(collection_id, nft_id, resource_id))?
+			.call(&(collection_id, nft_id, resource_id))
 	}
 
 	pub fn accept_resource_removal(
@@ -548,9 +622,9 @@ impl Rmrk {
 	) -> Result<(), RmrkError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001001D)
 			.input::<(CollectionId, NftId, ResourceId)>()
-			.output::<Result<(), RmrkError>>()
+            .output::<()>()
 			.handle_error_code::<RmrkError>()
-			.call(&(collection_id, nft_id, resource_id))?
+			.call(&(collection_id, nft_id, resource_id))
 	}
 
 	pub fn set_priority(
@@ -560,9 +634,9 @@ impl Rmrk {
 	) -> Result<(), RmrkError> {
         ::ink_env::chain_extension::ChainExtensionMethod::build(0x0001001E)
 			.input::<(CollectionId, NftId, Vec<ResourceId>)>()
-			.output::<Result<(), RmrkError>>()
+            .output::<()>()
 			.handle_error_code::<RmrkError>()
-			.call(&(collection_id, nft_id, priorities))?
+			.call(&(collection_id, nft_id, priorities))
 	}
 }
 
