@@ -110,7 +110,7 @@ mod rmrk_example {
 
 		/// write functions
 		#[ink(message)]
-		pub fn mint_ntf(
+		pub fn mint_nft(
 		    &mut self,
 		    owner: AccountId,
 			nft_id: NftId,
@@ -121,8 +121,10 @@ mod rmrk_example {
 		    transferable: bool,
 		    resources: Option<Vec<ResourceTypes>>,
 		) -> Result<(), RmrkError> {
-            Rmrk::mint_nft(
-                owner,
+			ink_env::debug_println!("mint_nft enter in contract {:?}", metadata);
+
+            let mint_result = Rmrk::mint_nft(
+				owner,
 				nft_id,
                 collection_id,
                 royalty_recipient,
@@ -130,7 +132,11 @@ mod rmrk_example {
                 metadata,
                 transferable,
                 resources,
-            )
+            );
+			ink_env::debug_println!("[Contract] mint_nft result {:?}", mint_result);
+
+			mint_result
+
 		}
 
 		#[ink(message)]
@@ -164,14 +170,14 @@ mod rmrk_example {
 			max: Option<u32>,
 			symbol: Vec<u8>,
 		) -> Result<(), RmrkError> {
-			ink_env::debug_println!("create collection enter in contract {:?}", metadata);
-			let result = Rmrk::create_collection(
+			// ink_env::debug_println!("create collection enter in contract {:?}", metadata);
+			Rmrk::create_collection(
                 metadata,
                 max,
                 symbol,
-            );
-			ink_env::debug_println!("create collection result in contract {:?}", result);
-			Ok(())
+            )
+			// ink_env::debug_println!("create collection result in contract {:?}", result);
+			// Ok(())
 		}
 
 		#[ink(message)]

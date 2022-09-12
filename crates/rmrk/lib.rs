@@ -32,6 +32,7 @@ pub enum RmrkError {
     CollectionFullOrLocked,
     CannotSendToDescendentOrSelf,
     ResourceAlreadyExists,
+    NftAlreadyExists,
     EmptyResource,
     TooManyRecursions,
     NftIsLocked,
@@ -82,16 +83,17 @@ impl ink_env::chain_extension::FromStatusCode for RmrkError {
             14 => Err(Self::CollectionFullOrLocked),
             15 => Err(Self::CannotSendToDescendentOrSelf),
             16 => Err(Self::ResourceAlreadyExists),
-            17 => Err(Self::EmptyResource),
-            18 => Err(Self::TooManyRecursions),
-            19 => Err(Self::NftIsLocked),
-            20 => Err(Self::CannotAcceptNonOwnedNft),
-            21 => Err(Self::CannotRejectNonOwnedNft),
-            22 => Err(Self::CannotRejectNonPendingNft),
-            23 => Err(Self::ResourceDoesntExist),
-            24 => Err(Self::ResourceNotPending),
-            25 => Err(Self::NonTransferable),
-            26 => Err(Self::CannotSendEquippedItem),
+            17 => Err(Self::NftAlreadyExists),
+            18 => Err(Self::EmptyResource),
+            19 => Err(Self::TooManyRecursions),
+            20 => Err(Self::NftIsLocked),
+            21 => Err(Self::CannotAcceptNonOwnedNft),
+            22 => Err(Self::CannotRejectNonOwnedNft),
+            23 => Err(Self::CannotRejectNonPendingNft),
+            24 => Err(Self::ResourceDoesntExist),
+            25 => Err(Self::ResourceNotPending),
+            26 => Err(Self::NonTransferable),
+            27 => Err(Self::CannotSendEquippedItem),
 			_ => panic!("RMRK contract encountered unknown status code"),
 		}
 	}
@@ -175,7 +177,7 @@ pub enum ResourceTypes {
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 pub struct BasicResource {
 	/// Reference to IPFS location of metadata
-	pub metadata: Option<Vec<u8>>,
+	pub metadata: Vec<u8>,
 }
 
 #[derive(PartialEq, Debug, Eq, Clone, Encode, Decode)]

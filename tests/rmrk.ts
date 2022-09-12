@@ -1,10 +1,13 @@
-import { forceEras, setupContract } from './helper'
+import { setupContract } from './helper'
 import { network } from 'redspot'
 import { expect } from "./setup/chai";
 import { Option } from '@polkadot/types';
 import { buildTx } from '@redspot/patract/buildTx'
 import { AccountLedger } from "./types";
-import BN from "bn.js";
+// import BN from "bn.js";
+import { BigNumber } from '@redspot/patract/types';
+import Contract from '@redspot/patract/contract';
+import { Signer } from 'redspot/provider';
 const { api } = network
 
 describe('RMRK', () => {
@@ -19,32 +22,95 @@ describe('RMRK', () => {
         await expect(contract.query.collectionIndex()).to.output(expectedIndex);
     })
 
-
-
     it('create NFT collection', async () => {
         const { contract, one, unit, alice } = await setup();
 
-        const currentIndex = await api.query.rmrkCore.collectionIndex();
-        console.log("currentIndex:", currentIndex)
-        const reserveValue = one.muln(100);
-        const tx = await contract.connect(alice).tx.createCollection('test-metadata', 42, 'test-symbol', { value: reserveValue });
-        console.log("create connection tx:", tx)
-        const afterIndex = await api.query.rmrkCore.collectionIndex();
-        console.log("afterIndex:", afterIndex)
-        // expect(await api.query.rmrkCore.collectionIndex()).not.equal(currentIndex);
+        const collectionId = await createCollection(contract, alice, "mintingCollectionMetadata", null, 'MCM', one.muln(100))
+        console.log("created collectionId:", collectionId);
     });
 
-    it('[error] create NFT collection for 0 NFTs', async () => {
-        const { contract, one, alice } = await setup();
+    // it('[error] create NFT collection for 0 NFTs', async () => {
+    //     const { contract, one, alice } = await setup();
 
-        const currentIndex = await api.query.rmrkCore.collectionIndex();
-        console.log("currentIndex:", currentIndex)
-        const reserveValue = one.muln(1);
-        const tx = await contract.connect(alice).query.createCollection('', 0, '', { value: reserveValue });
-        console.log("create connection tx:", tx)
-        const afterIndex = await api.query.rmrkCore.collectionIndex();
-        console.log("afterIndex:", afterIndex)
+    //     const currentIndex = await api.query.rmrkCore.collectionIndex();
+    //     console.log("currentIndex:", currentIndex)
+    //     const reserveValue = one.muln(1);
+    //     const tx = await contract.connect(alice).query.createCollection('', 0, '', { value: reserveValue });
+    //     console.log("create connection tx:", tx)
+    //     const afterIndex = await api.query.rmrkCore.collectionIndex();
+    //     console.log("afterIndex:", afterIndex)
+    // });
+
+    it("mint NFT", async () => {
+        const { contract, one, alice, bob } = await setup();
+
+        const royalty = 70000;
+        const nftMetadata = "recipient-royalty-NFT-test-metadata";
+
+        const collectionId = await createCollection(contract, alice, "mintingCollectionMetadata", null, 'MCM', one.muln(100))
+        console.log("created collectionId:", collectionId);
+
+        try {
+            await mintNft(
+                contract,
+                alice.address,
+                23,
+                collectionId,
+                null,
+                null,
+                nftMetadata,
+                true,
+                null
+            );
+        } catch (e) {
+            console.error(e);
+        }
     });
 
+    const createCollection = async (contract, owner, collectionMetadata, collectionMax, collectionSymbol, reserveValue) => {
 
-})
+        const currentIndex = await api.query.rmrkCore.collectionIndex();
+        await contract.connect(owner).tx.createCollection(collectionMetadata, collectionMax, collectionSymbol, { value: reserveValue });
+        const afterIndex = await api.query.rmrkCore.collectionIndex();
+        expect(Number(afterIndex.toString())).is.equal(Number(currentIndex.toString()) + 1)
+        return Number(currentIndex.toString());
+    }
+
+    const mintNft = async (
+        contract: Contract,
+        owner,
+        nftId: number,
+        collectionId: number,
+        royaltyRecipient,
+        royalty: number | null = null,
+        nftMetadata: string,
+        transferable: boolean = true,
+        resources:
+            | { resource: { basic?: any; composable?: any; slot?: any }; id: number }[]
+            | null = null
+    ) => {
+
+        const royaltyOptional = royalty ? royalty.toString() : null;
+        const royaltyRecepientOptional = royalty ? royaltyRecipient.toString() : null;
+        try {
+            await contract.tx.mintNft(
+                owner,
+                nftId,
+                collectionId,
+                royaltyRecepientOptional,
+                royaltyOptional,
+                nftMetadata,
+                transferable,
+                resources
+                );
+            } catch (e) {
+                console.error(e);
+            }
+            const mintedNft = await api.query.rmrkCore.nfts(collectionId, nftId);
+            // @ts-ignore
+            expect(mintedNft.isSome).to.be.true;
+
+            console.log("Minted (collectionId:", collectionId, ", nftId:", nftId)
+        }
+
+    })
