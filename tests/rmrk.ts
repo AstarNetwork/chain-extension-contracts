@@ -29,18 +29,6 @@ describe('RMRK', () => {
         console.log("created collectionId:", collectionId);
     });
 
-    // it('[error] create NFT collection for 0 NFTs', async () => {
-    //     const { contract, one, alice } = await setup();
-
-    //     const currentIndex = await api.query.rmrkCore.collectionIndex();
-    //     console.log("currentIndex:", currentIndex)
-    //     const reserveValue = one.muln(1);
-    //     const tx = await contract.connect(alice).query.createCollection('', 0, '', { value: reserveValue });
-    //     console.log("create connection tx:", tx)
-    //     const afterIndex = await api.query.rmrkCore.collectionIndex();
-    //     console.log("afterIndex:", afterIndex)
-    // });
-
     it("mint NFT", async () => {
         const { contract, one, alice, bob } = await setup();
 
@@ -65,6 +53,42 @@ describe('RMRK', () => {
         } catch (e) {
             console.error(e);
         }
+    });
+
+    it("[Error test] mint already existing NFT", async () => {
+        const { contract, one, alice, bob } = await setup();
+
+        const nftId = 42;
+        const nftMetadata = "recipient-royalty-NFT-test-metadata";
+
+        const collectionId = await createCollection(contract, alice, "mintingCollectionMetadata", null, 'MCM', one.muln(100))
+        console.log("created collectionId:", collectionId);
+
+        await mintNft(
+            contract,
+            alice.address,
+            nftId,
+            collectionId,
+            null,
+            null,
+            nftMetadata,
+            true,
+            null
+        );
+
+        // now try to mint the same nft but expect error NftAlreadyExists
+        await expect(contract.connect(alice).query.mintNft(
+            alice.address,
+            nftId,
+            collectionId,
+            null,
+            null,
+            nftMetadata,
+            true,
+            null
+        )
+        ).to.output({ Err: 'NftAlreadyExists' })
+
     });
 
     const createCollection = async (contract, owner, collectionMetadata, collectionMax, collectionSymbol, reserveValue) => {
@@ -102,15 +126,15 @@ describe('RMRK', () => {
                 nftMetadata,
                 transferable,
                 resources
-                );
-            } catch (e) {
-                console.error(e);
-            }
-            const mintedNft = await api.query.rmrkCore.nfts(collectionId, nftId);
-            // @ts-ignore
-            expect(mintedNft.isSome).to.be.true;
-
-            console.log("Minted (collectionId:", collectionId, ", nftId:", nftId)
+            );
+        } catch (e) {
+            console.error(e);
         }
+        const mintedNft = await api.query.rmrkCore.nfts(collectionId, nftId);
+        // @ts-ignore
+        expect(mintedNft.isSome).to.be.true;
 
-    })
+        console.log("Minted (collectionId:", collectionId, ", nftId:", nftId)
+    }
+
+})
