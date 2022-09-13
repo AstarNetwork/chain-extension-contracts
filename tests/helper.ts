@@ -32,7 +32,7 @@ export const setupContract = async (name, constructor, ...args) => {
         abi,
         one,
         query: contract.query,
-        tx: contract.tx
+        tx: contract.tx,
     }
 }
 

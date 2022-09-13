@@ -3,7 +3,7 @@ import '@redspot/patract'
 import '@redspot/chai'
 import '@redspot/gas-reporter'
 
-const types =   {
+const types = {
     minmax: [0, undefined],
     types: {
         Keys: 'AccountId',
@@ -35,14 +35,49 @@ export default {
     contract: {
         ink: {
             toolchain: 'nightly',
-            sources: ['examples/dapps-staking']
+            // sources: ['examples/dapps-staking']
+            sources: ['examples/rmrk']
         }
     },
     networks: {
         development: {
             endpoint: 'ws://127.0.0.1:9944',
             gasLimit: '400000000000',
-            explorerUrl: 'https://polkadot.js.org/apps/#/explorer/query/?rpc=ws://127.0.0.1:9944/'
+            explorerUrl: 'https://polkadot.js.org/apps/#/explorer/query/?rpc=ws://127.0.0.1:9944/',
+            types: {
+                RmrkExtensionRmrkError: {
+                    _enum: {
+                        NoneValue: null,
+                        StorageOverflow: null,
+                        TooLong: null,
+                        NoAvailableCollectionId: null,
+                        NoAvailableResourceId: null,
+                        MetadataNotSet: null,
+                        RecipientNotSet: null,
+                        NoAvailableNftId: null,
+                        NotInRange: null,
+                        RoyaltyNotSet: null,
+                        CollectionUnknown: null,
+                        NoPermission: null,
+                        NoWitness: null,
+                        CollectionNotEmpty: null,
+                        CollectionFullOrLocked: null,
+                        CannotSendToDescendentOrSelf: null,
+                        ResourceAlreadyExists: null,
+                        NftAlreadyExists: null,
+                        EmptyResource: null,
+                        TooManyRecursions: null,
+                        NftIsLocked: null,
+                        CannotAcceptNonOwnedNft: null,
+                        CannotRejectNonOwnedNft: null,
+                        CannotRejectNonPendingNft: null,
+                        ResourceDoesntExist: null,
+                        ResourceNotPending: null,
+                        NonTransferable: null,
+                        CannotSendEquippedItem: null,
+                    },
+                },
+            },
         },
         substrate: {
             endpoint: 'ws://127.0.0.1:9944',
