@@ -13,8 +13,6 @@ The setup of this project depends on 4 other projects:
 * [Rooster DAO UI](https://github.com/RoosterDao/rooster-dao-ui)
 * [Contract UI with NFT viewer](https://github.com/RoosterDao/contracts-ui-with-nft-viewer)
 
-You can install all these projects following the instructions from different repositories, but using this composite repository will allow you to install tested compatible versions of the above.
-
 ## Swanky-node
 
 Plase follow the instructions on the [Swanky-node](https://github.com/AstarNetwork/swanky-node) Github page to compile the latest version of the node.
