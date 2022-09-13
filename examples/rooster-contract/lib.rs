@@ -514,16 +514,9 @@ pub mod governor {
                 );
             }
 
-            //let new_metadata : Vec<u8> = next_lvl_metadata.as_bytes().to_vec();
-
             let resource = BasicResource {
                 metadata: next_lvl_metadata.as_bytes().to_vec(),
             };
-
-
-            // let resource = BasicResource {
-            //     metadata: None,
-            // };
 
 
             Rmrk::add_basic_resource(
