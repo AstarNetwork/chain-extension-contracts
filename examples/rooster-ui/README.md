@@ -46,10 +46,10 @@ You can verify the status of your node using the [polkadot.js explorer](https://
     The contract was built in DEBUG mode.
 
     Your contract artifacts are ready. You can find them in:
-    /tmp/rooster-swanky/rooster-contracts/contracts/governor/target/ink
+    .../chain-extension-contracts/target/ink/rooster
 
-     - governor.contract (code + metadata)
-     - governor.wasm (the contract's code)
+     - rooster.contract (code + metadata)
+     - rooster.wasm (the contract's code)
      - metadata.json (the contract's metadata)
 
  After successful completion the WASM contract is generated.
@@ -70,13 +70,13 @@ Please refer to the documentation of each project for a more detailed guidance o
 
 
 
-As a first step you need to copy the contract *metadata.json* to the rooster-dao-ui application:
+As a first step you need to copy the contract *metadata.json* to the rooster-dao-ui application (from the root of this repo):
 
-    $ cp rooster-contracts/contracts/governor/target/ink/metadata.json rooster-dao-ui/rooster/lib/
+    $ cp target/ink/rooster/metadata.json examples/rooster-ui/rooster-dao-ui/rooster/lib/
 
 To install and start the application:
 
-    $ cd rooster-dao-ui/
+    $ cd examples/rooster-ui/rooster-dao-ui/
     $ yarn install
     ...
     ➤ YN0009: │ sqlite3@npm:4.2.0 couldn't be built successfully (exit code 1, logs can be found here: /tmp/xfs-29e9858c/build.log)
