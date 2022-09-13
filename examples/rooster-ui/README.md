@@ -9,7 +9,7 @@ This is the RoosterDao submission for the [Polkadot Hackathon North America edit
 The setup of this project depends on 4 other projects:
 
 * [Swanky-node](https://github.com/AstarNetwork/swanky-node)
-* [Rooster DAO contracts](https://github.com/RoosterDao/rooster-contracts) *swank-node* branch
+* [Rooster DAO contracts](https://github.com/RoosterDao/rooster-contracts) *swanky-node* branch
 * [Rooster DAO UI](https://github.com/RoosterDao/rooster-dao-ui)
 * [Contract UI with NFT viewer](https://github.com/RoosterDao/contracts-ui-with-nft-viewer)
 
