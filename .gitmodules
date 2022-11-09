@@ -1,7 +1,7 @@
 [submodule "examples/rooster-ui/rooster-dao-ui"]
 	path = examples/rooster-ui/rooster-dao-ui
-	url = git@github.com:RoosterDao/rooster-dao-ui.git
+	url = https://github.com/RoosterDao/rooster-dao-ui.git
 	branch = rooster-dao-ui-prototype
 [submodule "examples/rooster-ui/contracts-ui-with-nft-viewer"]
 	path = examples/rooster-ui/contracts-ui-with-nft-viewer
-	url = git@github.com:RoosterDao/contracts-ui-with-nft-viewer.git
+	url = https://github.com/RoosterDao/contracts-ui-with-nft-viewer.git
