@@ -1,0 +1,9 @@
+{
+  "projectFiles": [
+    "examples/dapps-staking",
+    "examples/rmrk"
+  ],
+  "typechainGeneratedPath": "types",
+  "isWorkspace": true,
+  "workspacePath": "./"
+}
