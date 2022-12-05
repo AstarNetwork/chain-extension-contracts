@@ -84,7 +84,7 @@ pub mod psp22_pallet_wrapper {
             let contract = self.env().account_id();
             self.pallet_assets
                 .transfer(Origin::Caller, self.asset_id, contract, amount)
-                .map_err(|_| PSP22Error::Custom("transfer failed".as_bytes().to_vec()))?;
+                .map_err(|_| PSP22Error::Custom("transfer failed".into()))?;
             self._mint_to(caller, amount)
         }
 
@@ -94,7 +94,7 @@ pub mod psp22_pallet_wrapper {
             self._burn_from(caller, amount)?;
             self.pallet_assets
                 .transfer(Origin::Address, self.asset_id, caller, amount)
-                .map_err(|_| PSP22Error::Custom("transfer failed".as_bytes().to_vec()))
+                .map_err(|_| PSP22Error::Custom("transfer failed".into()))
         }
     }
 }
