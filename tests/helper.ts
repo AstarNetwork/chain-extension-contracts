@@ -1,44 +1,110 @@
-import {artifacts, network, patract} from 'redspot'
-import BN from "bn.js";
-import {createSigner} from "redspot/provider";
-import { Keyring } from '@polkadot/keyring'
-import {buildTx} from "@redspot/patract/buildTx";
-const {api} = network
+import {Codec, Registry} from "@polkadot/types/types";
+import {SignerOptions, SubmittableExtrinsic} from "@polkadot/api/types";
+import {KeyringPair} from "@polkadot/keyring/types";
+import {SubmittableResult} from "@polkadot/api";
+import {AbiEvent} from "@polkadot/api-contract/types";
 
-const {getContractFactory, getRandomSigner} = patract
-const {getSigners} = network
+export async function buildTx(
+    registry: Registry,
+    extrinsic: SubmittableExtrinsic<'promise'>,
+    signer: KeyringPair,
+    options?: Partial<SignerOptions>
+): Promise<TransactionResponse> {
+    const signerAddress = signer;
+    return new Promise((resolve, reject) => {
+        const actionStatus = {
+            from: signerAddress.toString(),
+            txHash: extrinsic.hash.toHex()
+        } as Partial<TransactionResponse>;
 
-export const setupContract = async (name, constructor, ...args) => {
-    await api.isReady
-    const one = new BN(10).pow(new BN(api.registry.chainDecimals[0]))
-    const signers = await getSigners()
-    const signer = await getRandomSigner(signers[0], one.muln(100000))
-    // @ts-ignore
-    const alice = createSigner(signer, new Keyring({ type: 'sr25519'}).addFromUri('//Alice'));
-    const defaultSigner = await getRandomSigner(signers[0], one.muln(100000))
-    const bob = await getRandomSigner(signers[1], one.muln(100000))
+        extrinsic
+            .signAndSend(
+                signerAddress,
+                {
+                    ...options
+                },
+                (result: SubmittableResult) => {
+                    if (result.status.isInBlock) {
+                        actionStatus.blockHash = result.status.asInBlock.toHex();
+                    }
 
-    const contractFactory = await getContractFactory(name, defaultSigner)
-    const contract = await contractFactory.deploy(constructor, ...args)
-    const abi = artifacts.readArtifact(name)
+                    if (result.status.isFinalized || result.status.isInBlock) {
+                        result.events
+                            .filter(
+                                ({ event: { section } }: any): boolean => section === 'system'
+                            )
+                            .forEach((event: any): void => {
+                                const {
+                                    event: { data, method }
+                                } = event;
 
-    return {
-        defaultSigner,
-        alice,
-        bob,
-        accounts: [alice, await getRandomSigner(), await getRandomSigner()],
-        contractFactory,
-        contract,
-        abi,
-        one,
-        query: contract.query,
-        tx: contract.tx,
-    }
+                                if (method === 'ExtrinsicFailed') {
+                                    const [dispatchError] = data;
+                                    let message = dispatchError.type;
+
+                                    if (dispatchError.isModule) {
+                                        try {
+                                            const mod = dispatchError.asModule;
+                                            const error = registry.findMetaError(
+                                                new Uint8Array([
+                                                    mod.index.toNumber(),
+                                                    mod.error.toNumber()
+                                                ])
+                                            );
+                                            message = `${error.section}.${error.name}${
+                                                Array.isArray(error.docs)
+                                                    ? `(${error.docs.join('')})`
+                                                    : error.docs || ''
+                                            }`;
+                                        } catch (error) {
+                                            // swallow
+                                        }
+                                    }
+
+                                    actionStatus.error = {
+                                        message
+                                    };
+
+                                    reject(actionStatus);
+                                } else if (method === 'ExtrinsicSuccess') {
+                                    actionStatus.result = result;
+                                    resolve(actionStatus as TransactionResponse);
+                                }
+                            });
+                    } else if (result.isError) {
+                        actionStatus.error = {
+                            data: result
+                        };
+                        actionStatus.events = null;
+
+                        reject(actionStatus);
+                    }
+                }
+            )
+            .catch((error: any) => {
+                actionStatus.error = {
+                    message: error.message
+                };
+
+                reject(actionStatus);
+            });
+    });
 }
 
-export const forceEras = async (eras, sudo) => {
-    const forceNewEra = api.tx.sudo.sudo(api.tx.dappsStaking.forceNewEra())
-    for (let i = 0; i < eras; i++) {
-        await buildTx(api.registry, forceNewEra, sudo.address)
-    }
+export interface DecodedEvent {
+    args: Codec[];
+    name: string;
+    event: AbiEvent;
+}
+
+export interface TransactionResponse {
+    from: string;
+    txHash?: string;
+    blockHash?: string;
+    error?: {
+        message?: any;
+        data?: any;
+    };
+    result: SubmittableResult;
+    events?: DecodedEvent[];
 }

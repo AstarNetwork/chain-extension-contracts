@@ -1,0 +1,10 @@
+{
+  "projectFiles": [
+    "examples/dapps-staking",
+    "examples/rmrk",
+    "contracts/psp22_pallet_wrapper"
+  ],
+  "typechainGeneratedPath": "types",
+  "isWorkspace": true,
+  "workspacePath": "./"
+}
