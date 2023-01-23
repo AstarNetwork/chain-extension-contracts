@@ -8,6 +8,7 @@ import { KeyringPair } from '@polkadot/keyring/types';
 import { AccountLedger, EraInfo, EraStakingPointsIndividualClaim, GeneralStakerInfo, RewardDestination } from "./types";
 import { Option } from '@polkadot/types';
 import {buildTx} from "./helper";
+import {WeightV2} from "@polkadot/types/interfaces";
 
 use(chaiAsPromised);
 
@@ -24,6 +25,7 @@ describe('DAPPS STAKING', () => {
     let bob: KeyringPair;
     let stakingConstructor: staking_constructor
     let stakingContract: staking_contract;
+    let gasRequired: WeightV2;
 
     beforeEach(async function() {
         api = await ApiPromise.create({ provider: wsProvider });
@@ -112,7 +114,7 @@ describe('DAPPS STAKING', () => {
         const stakingAmount = ONE.muln(50000);
 
         let { gasRequired } = await stakingContract.withSigner(bob).query.bondAndStake({ value: stakingAmount });
-        await stakingContract.withSigner(bob).tx.bondAndStake({ value: stakingAmount, gasLimit: gasRequired * 2n });
+        await stakingContract.withSigner(bob).tx.bondAndStake({ value: stakingAmount, gasLimit: gasRequired });
 
         // verify contract's stake
         const generalStakerInfo = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
@@ -142,12 +144,12 @@ describe('DAPPS STAKING', () => {
         const stakingAmount = ONE.muln(1000);
 
         let { gasRequired } = await stakingContract.withSigner(bob).query.bondAndStake({ value: stakingAmount });
-        await stakingContract.withSigner(bob).tx.bondAndStake({ value: stakingAmount, gasLimit: gasRequired * 2n });
+        await stakingContract.withSigner(bob).tx.bondAndStake({ value: stakingAmount, gasLimit: gasRequired });
 
         // unbond & unstake 600
         const unbondAmount = ONE.muln(600);
         let { gasRequired: gas } = await stakingContract.withSigner(bob).query.unbondAndUnstake(unbondAmount );
-        await stakingContract.withSigner(bob).tx.unbondAndUnstake(unbondAmount, { gasLimit: gas * 2n });
+        await stakingContract.withSigner(bob).tx.unbondAndUnstake(unbondAmount, { gasLimit: gas });
 
         // verify contract stake is decreased by 600, and now is 400
         const generalStakerInfo = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
@@ -168,13 +170,13 @@ describe('DAPPS STAKING', () => {
         await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(stakingContract.address, { Wasm: stakingContract.address })), alice);
         const stakingAmount = ONE.muln(50000);
         let { gasRequired } = await stakingContract.withSigner(bob).query.bondAndStake({ value: stakingAmount });
-        await stakingContract.withSigner(bob).tx.bondAndStake({ value: stakingAmount, gasLimit: gasRequired * 2n });
+        await stakingContract.withSigner(bob).tx.bondAndStake({ value: stakingAmount, gasLimit: gasRequired });
 
         // @ts-ignore
         await forceEras(1, alice)
 
         let { gasRequired: gas } = await stakingContract.withSigner(bob).query.unbondAndUnstake(stakingAmount);
-        await stakingContract.withSigner(bob).tx.unbondAndUnstake(stakingAmount, { gasLimit: gas * 2n });
+        await stakingContract.withSigner(bob).tx.unbondAndUnstake(stakingAmount, { gasLimit: gas });
 
         // @ts-ignore
         await forceEras(bondingDuration + 1, alice)
@@ -184,7 +186,7 @@ describe('DAPPS STAKING', () => {
         expect(balanceBefore.data.reserved).to.not.equal(balanceBefore.data.free)
 
         let { gasRequired: gas2 } = await stakingContract.withSigner(bob).query.withdrawUnbonded();
-        await stakingContract.withSigner(bob).tx.withdrawUnbonded({ gasLimit: gas2 * 2n });
+        await stakingContract.withSigner(bob).tx.withdrawUnbonded({ gasLimit: gas2 });
 
         const balanceAfter = await api.query.system.account(bob.address)
         // @ts-ignore
@@ -202,7 +204,7 @@ describe('DAPPS STAKING', () => {
         await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(stakingContract.address, { Wasm: stakingContract.address })), alice);
         const stakingAmount = ONE.muln(50000);
         let { gasRequired } = await stakingContract.withSigner(bob).query.bondAndStake({ value: stakingAmount });
-        await stakingContract.withSigner(bob).tx.bondAndStake({ value: stakingAmount, gasLimit: gasRequired * 2n });
+        await stakingContract.withSigner(bob).tx.bondAndStake({ value: stakingAmount, gasLimit: gasRequired });
 
         // @ts-ignore
         await forceEras(bondingDuration + 1, alice)
@@ -213,7 +215,7 @@ describe('DAPPS STAKING', () => {
         expect(balanceBefore.data.free.toString()).to.equal(new BN(stakingAmount).add(new BN(balanceStakingContract.data.free).sub(ONE.muln(100))).toString())
 
         let { gasRequired: gas } = await stakingContract.withSigner(bob).query.claimStaker();
-        await stakingContract.withSigner(bob).tx.claimStaker({ gasLimit: gas * 2n });
+        await stakingContract.withSigner(bob).tx.claimStaker({ gasLimit: gas });
 
         const balanceAfter = await api.query.system.account(stakingContract.address)
         // @ts-ignore
@@ -226,7 +228,7 @@ describe('DAPPS STAKING', () => {
         await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(stakingContract.address, { Wasm: stakingContract.address })), alice);
         const stakingAmount = ONE.muln(50000);
         let { gasRequired } = await stakingContract.withSigner(bob).query.bondAndStake({ value: stakingAmount });
-        await stakingContract.withSigner(bob).tx.bondAndStake({ value: stakingAmount, gasLimit: gasRequired * 2n });
+        await stakingContract.withSigner(bob).tx.bondAndStake({ value: stakingAmount, gasLimit: gasRequired });
 
         // advance an era to be eligible for era reward
         await forceEras(2, alice)
@@ -241,7 +243,7 @@ describe('DAPPS STAKING', () => {
         const theoricalrewards = contractStake.total / generalEraInfo.staked * generalEraInfo.rewards.dapps
 
         let { gasRequired: gas } = await stakingContract.withSigner(alice).query.claimDapp(stakingContract.address, Number(currentEra) - 1);
-        await stakingContract.withSigner(alice).tx.claimDapp(stakingContract.address, Number(currentEra) - 1 ,{ gasLimit: gas * 2n });
+        await stakingContract.withSigner(alice).tx.claimDapp(stakingContract.address, Number(currentEra) - 1 ,{ gasLimit: gas });
 
         const balanceAfter = await api.query.system.account(stakingContract.address)
         // @ts-ignore
@@ -259,7 +261,7 @@ describe('DAPPS STAKING', () => {
         await buildTx(api.registry, api.tx.sudo.sudo(api.tx.dappsStaking.register(stakingContract.address, { Wasm: stakingContract.address })), alice);
         const stakingAmount = ONE.muln(50000);
         let { gasRequired } = await stakingContract.withSigner(bob).query.bondAndStake({ value: stakingAmount });
-        await stakingContract.withSigner(bob).tx.bondAndStake({ value: stakingAmount, gasLimit: gasRequired * 2n });
+        await stakingContract.withSigner(bob).tx.bondAndStake({ value: stakingAmount, gasLimit: gasRequired });
 
         // by default is set to StakeBalance
         const ledger = await api.query.dappsStaking.ledger<AccountLedger>(stakingContract.address)
@@ -269,7 +271,7 @@ describe('DAPPS STAKING', () => {
 
         // set to FreeBalance
         let { gasRequired: gas } = await stakingContract.query.setRewardDestination(0);
-        await stakingContract.tx.setRewardDestination(0,{ gasLimit: gas * 2n });
+        await stakingContract.tx.setRewardDestination(0,{ gasLimit: gas });
 
         const ledger2 = await api.query.dappsStaking.ledger<AccountLedger>(stakingContract.address)
         // @ts-ignore
@@ -290,7 +292,7 @@ describe('DAPPS STAKING', () => {
         const transferAmount = ONE.muln(1000)
 
         let { gasRequired } = await stakingContract.withSigner(bob).query.bondAndStake({ value: stakingAmount });
-        await stakingContract.withSigner(bob).tx.bondAndStake({ value: stakingAmount, gasLimit: gasRequired * 2n });
+        await stakingContract.withSigner(bob).tx.bondAndStake({ value: stakingAmount, gasLimit: gasRequired });
 
         const stakerInfoContract1Before = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
             stakingContract.address,
@@ -306,7 +308,7 @@ describe('DAPPS STAKING', () => {
         );
 
         let { gasRequired: gas } = await stakingContract.withSigner(bob).query.nominationTransfer(stakingContract.address,contract2.address, transferAmount);
-        await stakingContract.withSigner(bob).tx.nominationTransfer(stakingContract.address, contract2.address, transferAmount,{ gasLimit: gas * 2n });
+        await stakingContract.withSigner(bob).tx.nominationTransfer(stakingContract.address, contract2.address, transferAmount,{ gasLimit: gas });
 
         const stakerInfoContract1After = await api.query.dappsStaking.generalStakerInfo<GeneralStakerInfo>(
             stakingContract.address,

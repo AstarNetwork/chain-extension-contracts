@@ -7,6 +7,7 @@ import { ApiPromise, WsProvider, Keyring } from '@polkadot/api';
 import { KeyringPair } from '@polkadot/keyring/types';
 import {buildTx} from "./helper";
 import {afterEach} from "mocha";
+import {WeightV2} from "@polkadot/types/interfaces";
 
 use(chaiAsPromised);
 
@@ -23,6 +24,8 @@ describe('PSP22 PALLET WRAPPER', () => {
     let bob: KeyringPair;
     let psp22Constructor: psp22_constructor
     let psp22: psp22_contract;
+
+    let gasRequired: WeightV2;
 
      beforeEach(async function() {
         api = await ApiPromise.create({ provider: wsProvider });
@@ -45,7 +48,7 @@ describe('PSP22 PALLET WRAPPER', () => {
         await buildTx(api.registry, api.tx.assets.mint(1, {id: alice.address}, 1000), alice)
 
         let { gasRequired } = await psp22.query.deposit(100);
-        await psp22.tx.deposit(100, {gasLimit: gasRequired * 2n });
+        await psp22.tx.deposit(100, {gasLimit: gasRequired });
 
         await expect((await psp22.query.balanceOf(alice.address)).value.toNumber()).to.equal(100)
     })
@@ -54,10 +57,10 @@ describe('PSP22 PALLET WRAPPER', () => {
         await buildTx(api.registry, api.tx.assets.mint(1, {id: alice.address}, 1000), alice)
 
         let { gasRequired } = await psp22.query.deposit(100);
-        await psp22.tx.deposit(100, {gasLimit: gasRequired * 2n });
+        await psp22.tx.deposit(100, {gasLimit: gasRequired });
 
         let { gasRequired: gas }  = await psp22.query.transfer(bob.address ,100, ['']);
-        await psp22.tx.transfer(bob.address ,100, [''], {gasLimit: gas * 2n });
+        await psp22.tx.transfer(bob.address ,100, [''], {gasLimit: gas });
 
         // @ts-ignore
         await expect((await api.query.assets.account(1, psp22.address)).unwrapOrDefault().balance.toNumber()).to.equal(100)
@@ -73,13 +76,13 @@ describe('PSP22 PALLET WRAPPER', () => {
         await buildTx(api.registry, api.tx.assets.mint(1, {id: alice.address}, 1000), alice)
 
         let { gasRequired } = await psp22.query.deposit(100);
-        await psp22.tx.deposit(100, {gasLimit: gasRequired * 2n });
+        await psp22.tx.deposit(100, {gasLimit: gasRequired });
 
         let { gasRequired: gas }  = await psp22.query.transfer(bob.address ,100, ['']);
-        await psp22.tx.transfer(bob.address ,100, [''], {gasLimit: gas * 2n });
+        await psp22.tx.transfer(bob.address ,100, [''], {gasLimit: gas });
 
         let { gasRequired: gas2 }  = await psp22.withSigner(bob).query.withdraw(100);
-        await psp22.withSigner(bob).tx.withdraw(100, {gasLimit: gas2 * 2n });
+        await psp22.withSigner(bob).tx.withdraw(100, {gasLimit: gas2 });
 
         // @ts-ignore
         await expect((await api.query.assets.account(1, psp22.address)).unwrapOrDefault().balance.toNumber()).to.equal(0)
