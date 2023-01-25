@@ -3,6 +3,7 @@
 
 #[openbrush::contract]
 pub mod psp22_pallet_wrapper {
+    use assets_extension::*;
     use ink_lang::codegen::{
         EmitEvent,
         Env,
@@ -11,10 +12,6 @@ pub mod psp22_pallet_wrapper {
     use openbrush::{
         contracts::psp22::*,
         traits::Storage,
-    };
-    pub use pallet_assets_chain_extension::{
-        ink::*,
-        traits::*,
     };
 
     #[ink(event)]
@@ -60,7 +57,6 @@ pub mod psp22_pallet_wrapper {
         psp22: psp22::Data,
         asset_id: u128,
         origin: Origin,
-        pallet_assets: AssetsExtension,
     }
 
     impl PSP22 for PSP22WrapperContract {}
@@ -82,8 +78,7 @@ pub mod psp22_pallet_wrapper {
         pub fn deposit(&mut self, amount: Balance) -> Result<(), PSP22Error> {
             let caller = self.env().caller();
             let contract = self.env().account_id();
-            self.pallet_assets
-                .transfer(Origin::Caller, self.asset_id, contract, amount)
+            AssetsExtension::transfer(Origin::Caller, self.asset_id, contract, amount)
                 .map_err(|_| PSP22Error::Custom("transfer failed".into()))?;
             self._mint_to(caller, amount)
         }
@@ -92,8 +87,7 @@ pub mod psp22_pallet_wrapper {
         pub fn withdraw(&mut self, amount: Balance) -> Result<(), PSP22Error> {
             let caller = self.env().caller();
             self._burn_from(caller, amount)?;
-            self.pallet_assets
-                .transfer(Origin::Address, self.asset_id, caller, amount)
+            AssetsExtension::transfer(Origin::Address, self.asset_id, caller, amount)
                 .map_err(|_| PSP22Error::Custom("transfer failed".into()))
         }
     }

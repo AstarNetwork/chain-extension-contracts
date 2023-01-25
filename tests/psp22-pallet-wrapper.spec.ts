@@ -93,4 +93,11 @@ describe('PSP22 PALLET WRAPPER', () => {
         await expect((await psp22.query.balanceOf(alice.address)).value.toNumber()).to.equal(0)
         await expect((await psp22.query.balanceOf(bob.address)).value.toNumber()).to.equal(0)
     })
+
+    it('create', async () => {
+        let { gasRequired: gas }  = await psp22.query.create(2 ,2, {
+            value: 1000000,
+        });
+        await psp22.tx.create(10, 2,{gasLimit: gas, value: 1000000 });
+    })
 })

@@ -1,5 +1,5 @@
 [package]
-name = "psp22_pallet_wrapper"
+name = "asset_wrapper_mock"
 version = "0.1.0"
 authors = ["Stake Technologies <devops@stake.co.jp>"]
 edition = "2021"
@@ -14,9 +14,6 @@ ink_prelude = { version = "~3.4.0", default-features = false }
 
 scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
 scale-info = { version = "2", default-features = false, features = ["derive"], optional = true }
-
-# use forked 2.3.0 version of openbrush until asset_id is revolved
-openbrush = { git = "https://github.com/PierreOssun/openbrush-contracts", default-features = false, features = ["psp22"] }
 
 assets_extension = { path = "../../crates/assets", default-features = false }
 
@@ -37,7 +34,6 @@ std = [
     "scale/std",
     "scale-info",
     "scale-info/std",
-    "openbrush/std",
     "assets_extension/std"
 ]
 ink-as-dependency = []
