@@ -3,7 +3,7 @@ members = [
     "examples/dapps-staking",
     "examples/rmrk",
     "examples/rooster-contract",
-    "examples/asset-mock",
+    "examples/assets-mock",
     "contracts/**"
 ]
 exclude = [
