@@ -200,6 +200,10 @@ pub enum AssetsError {
     WouldBurn = 15,
     /// Unknown error
     RuntimeError = 99,
+    /// Encountered unknown status code
+    UnknownStatusCode,
+    /// Encountered unexpected invalid SCALE encoding
+    InvalidScaleEncoding,
 }
 
 impl ink_env::chain_extension::FromStatusCode for AssetsError {
@@ -222,13 +226,13 @@ impl ink_env::chain_extension::FromStatusCode for AssetsError {
             14 => Err(Self::NoDeposit),
             15 => Err(Self::WouldBurn),
             99 => Err(Self::RuntimeError),
-            _ => panic!("encountered unknown status code"),
+            _ => Err(Self::UnknownStatusCode),
         }
     }
 }
 
 impl From<scale::Error> for AssetsError {
     fn from(_: scale::Error) -> Self {
-        panic!("encountered unexpected invalid SCALE encoding")
+        AssetsError::InvalidScaleEncoding
     }
 }

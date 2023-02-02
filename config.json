@@ -1,6 +1,6 @@
 {
   "projectFiles": [
-    "examples/assets-mock",
+    "examples/assets",
     "examples/dapps-staking",
     "examples/rmrk",
     "contracts/psp22_pallet_wrapper"

@@ -27,16 +27,14 @@ pub mod contract {
         }
 
         #[ink(message)]
-        pub fn mint(&mut self, asset_id: u128, amount: Balance) -> Result<(), AssetsError> {
-            let caller = self.env().caller();
-            AssetsExtension::mint(Origin::Caller, asset_id, caller, amount)?;
+        pub fn mint(&mut self, asset_id: u128, beneficiary: AccountId, amount: Balance) -> Result<(), AssetsError> {
+            AssetsExtension::mint(Origin::Caller, asset_id, beneficiary, amount)?;
             Ok(())
         }
 
         #[ink(message)]
-        pub fn burn(&mut self, asset_id: u128, amount: Balance) -> Result<(), AssetsError> {
-            let caller = self.env().caller();
-            AssetsExtension::burn(Origin::Caller, asset_id, caller, amount)?;
+        pub fn burn(&mut self, asset_id: u128, who: AccountId, amount: Balance) -> Result<(), AssetsError> {
+            AssetsExtension::burn(Origin::Caller, asset_id, who, amount)?;
             Ok(())
         }
 

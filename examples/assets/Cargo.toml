@@ -1,5 +1,5 @@
 [package]
-name = "asset_wrapper_mock"
+name = "asset_wrapper"
 version = "0.1.0"
 authors = ["Stake Technologies <devops@stake.co.jp>"]
 edition = "2021"
@@ -18,7 +18,7 @@ scale-info = { version = "2", default-features = false, features = ["derive"], o
 assets_extension = { path = "../../crates/assets", default-features = false }
 
 [lib]
-name = "asset_wrapper_mock"
+name = "asset_wrapper"
 path = "lib.rs"
 crate-type = ["cdylib"]
 
