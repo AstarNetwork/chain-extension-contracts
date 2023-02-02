@@ -3,24 +3,6 @@ import {SignerOptions, SubmittableExtrinsic} from "@polkadot/api/types";
 import {KeyringPair} from "@polkadot/keyring/types";
 import {SubmittableResult} from "@polkadot/api";
 import {AbiEvent} from "@polkadot/api-contract/types";
-import {expect} from "chai";
-import { Result } from '@727-ventures/typechain-types';
-
-export function revertedWith(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    result: { value: { err?: any } },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
-    errorTitle: any,
-): void {
-    if (result.value instanceof Result) {
-        result.value = result.value.ok;
-    }
-    if (typeof errorTitle === 'object') {
-        expect(result.value).should.have.property('err', errorTitle);
-    } else {
-        expect(result.value.err).should.have.property(errorTitle);
-    }
-}
 
 export async function buildTx(
     registry: Registry,

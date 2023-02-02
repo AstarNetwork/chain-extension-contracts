@@ -4,9 +4,10 @@ import assets_constructor from '../types/constructors/asset_wrapper_mock';
 import assets_contract from '../types/contracts/asset_wrapper_mock';
 import { ApiPromise, WsProvider, Keyring } from '@polkadot/api';
 import { KeyringPair } from '@polkadot/keyring/types';
-import {buildTx, revertedWith} from "./helper";
+import {buildTx} from "./helper";
 import {afterEach} from "mocha";
 import {WeightV2} from "@polkadot/types/interfaces";
+import {stringToHex} from "@polkadot/util/string/toHex";
 
 use(chaiAsPromised);
 
@@ -152,10 +153,8 @@ describe('ASSETS', () => {
         let { gasRequired: gas4 }  = await assets.query.cancelApproval(1,bob.address);
         await assets.tx.cancelApproval(1, bob.address,{gasLimit: gas4 });
 
-        // revertedWith(
-        //     await assets.withSigner(bob).query.transferApproved(1, alice.address, charlie.address, 50),
-        //     'callerIsNotFeeSetter',
-        // );
+        // @ts-ignore
+        await expect((await assets.withSigner(bob).query.transferApproved(1, alice.address, charlie.address, 100)).value.err).to.equal('Unapproved')
 
         // @ts-ignore
         await expect((await assets.query.allowance(1, alice.address, bob.address)).value.toNumber()).to.equal(0)
@@ -175,5 +174,17 @@ describe('ASSETS', () => {
             value: 1000000,
         });
         await assets.tx.create(1, 1,{gasLimit: gas, value: 1000000 });
+
+        let { gasRequired: gas3 }  = await assets.query.setMetadata(1, 'Shiden Token' as unknown as string[], 'TTT' as unknown as string[], 18);
+        await assets.tx.setMetadata(1, 'Shiden Token' as unknown as string[], 'TTT' as unknown as string[], 18, {gasLimit: gas3 });
+
+        // @ts-ignore
+        await expect((await assets.query.metadataName(1)).value).to.equal(stringToHex('Shiden Token'))
+
+        // @ts-ignore
+        await expect((await assets.query.metadataSymbol(1)).value).to.equal(stringToHex('TTT'))
+
+        // @ts-ignore
+        await expect((await assets.query.metadataDecimals(1, alice.address, bob.address)).value).to.equal(18)
     })
 })

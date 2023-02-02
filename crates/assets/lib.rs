@@ -166,15 +166,62 @@ impl ink_storage::traits::SpreadAllocate for Origin {
 pub enum AssetsError {
     /// Success
     Success = 0,
-    /// Error
-    IsError = 1,
+    /// Account balance must be greater than or equal to the transfer amount.
+    BalanceLow = 1,
+    /// The account to alter does not exist.
+    NoAccount = 2,
+    /// The signing account has no permission to do the operation.
+    NoPermission = 3,
+    /// The given asset ID is unknown.
+    Unknown = 4,
+    /// The origin account is frozen.
+    Frozen = 5,
+    /// The asset ID is already taken.
+    InUse = 6,
+    /// Invalid witness data given.
+    BadWitness = 7,
+    /// Minimum balance should be non-zero.
+    MinBalanceZero = 8,
+    /// Unable to increment the consumer reference counters on the account. Either no provider
+    /// reference exists to allow a non-zero balance of a non-self-sufficient asset, or the
+    /// maximum number of consumers has been reached.
+    NoProvider = 9,
+    /// Invalid metadata given.
+    BadMetadata = 10,
+    /// No approval exists that would allow the transfer.
+    Unapproved = 11,
+    /// The source account would not survive the transfer and it needs to stay alive.
+    WouldDie = 12,
+    /// The asset-account already exists.
+    AlreadyExists = 13,
+    /// The asset-account doesn't have an associated deposit.
+    NoDeposit = 14,
+    /// The operation would result in funds being burned.
+    WouldBurn = 15,
+    /// Unknown error
+    RuntimeError = 99,
 }
 
 impl ink_env::chain_extension::FromStatusCode for AssetsError {
     fn from_status_code(status_code: u32) -> Result<(), Self> {
         match status_code {
             0 => Ok(()),
-            1 => Err(Self::IsError),
+            1 => Err(Self::BalanceLow),
+            2 => Err(Self::NoAccount),
+            3 => Err(Self::NoPermission),
+            4 => Err(Self::Unknown),
+            5 => Err(Self::Frozen),
+            6 => Err(Self::InUse),
+            7 => Err(Self::BadWitness),
+            8 => Err(Self::MinBalanceZero),
+            9 => Err(Self::NoProvider),
+            10 => Err(Self::BadMetadata),
+            11 => Err(Self::Unapproved),
+            12 => Err(Self::WouldDie),
+            13 => Err(Self::AlreadyExists),
+            14 => Err(Self::NoDeposit),
+            15 => Err(Self::WouldBurn),
+            99 => Err(Self::RuntimeError),
             _ => panic!("encountered unknown status code"),
         }
     }
