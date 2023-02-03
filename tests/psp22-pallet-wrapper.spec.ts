@@ -1,6 +1,5 @@
 import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import BN from 'bn.js';
 import psp22_constructor from '../types/constructors/psp22_pallet_wrapper';
 import psp22_contract from '../types/contracts/psp22_pallet_wrapper';
 import { ApiPromise, WsProvider, Keyring } from '@polkadot/api';
@@ -10,8 +9,6 @@ import {afterEach} from "mocha";
 import {WeightV2} from "@polkadot/types/interfaces";
 
 use(chaiAsPromised);
-
-const ONE = new BN(10).pow(new BN(18));
 
 // Create a new instance of contract
 const wsProvider = new WsProvider('ws://127.0.0.1:9944');
