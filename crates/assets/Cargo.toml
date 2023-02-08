@@ -10,7 +10,7 @@ ink_metadata = { version = "4.0.0-rc", features = ["derive"], optional = true }
 
 scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
 scale-info = { version = "2", default-features = false, features = ["derive"], optional = true }
-assets-chain-extension-types = { path = "../../../../astar/astar-frame-3/astar-frame/chain-extensions/types/assets", default-features = false, features = ["ink-no-std"] }
+assets-chain-extension-types = { git = "https://github.com/AstarNetwork/astar-frame", branch = "polkadot-v0.9.36", default-features = false, features = ["ink-no-std"] }
 
 [lib]
 name = "assets_extension"
