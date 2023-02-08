@@ -5,20 +5,16 @@ authors = ["Stake Technologies <devops@stake.co.jp>"]
 edition = "2021"
 
 [dependencies]
-ink_primitives = { version = "~3.4.0", default-features = false }
-ink_metadata = { version = "~3.4.0", default-features = false, features = ["derive"], optional = true }
-ink_env = { version = "~3.4.0", default-features = false }
-ink_storage = { version = "~3.4.0", default-features = false }
-ink_lang = { version = "~3.4.0", default-features = false }
-ink_prelude = { version = "~3.4.0", default-features = false }
+ink = { version = "~4.0.0-rc", default-features = false}
+ink_metadata = { version = "~4.0.0-rc", features = ["derive"], optional = true }
 
 scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
 scale-info = { version = "2", default-features = false, features = ["derive"], optional = true }
 
-# use forked 2.3.0 version of openbrush until asset_id is revolved
-openbrush = { git = "https://github.com/PierreOssun/openbrush-contracts", default-features = false, features = ["psp22"] }
+openbrush = { git = "https://github.com/727-Ventures/openbrush-contracts", version = "3.0.0-beta.1", default-features = false, features = ["psp22"] }
 
 assets_extension = { path = "../../crates/assets", default-features = false }
+assets-chain-extension-types = { path = "../../../../astar/astar-frame-3/astar-frame/chain-extensions/types/assets", default-features = false, features = ["ink"] }
 
 [lib]
 name = "psp22_pallet_wrapper"
@@ -28,16 +24,13 @@ crate-type = ["cdylib"]
 [features]
 default = ["std"]
 std = [
-    "ink_primitives/std",
-    "ink_metadata",
+    "ink/std",
     "ink_metadata/std",
-    "ink_env/std",
-    "ink_storage/std",
-    "ink_lang/std",
     "scale/std",
     "scale-info",
     "scale-info/std",
     "openbrush/std",
-    "assets_extension/std"
+    "assets_extension/std",
+    "assets-chain-extension-types/ink-std",
 ]
 ink-as-dependency = []

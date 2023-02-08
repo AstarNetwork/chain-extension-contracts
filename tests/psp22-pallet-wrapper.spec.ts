@@ -34,11 +34,17 @@ describe('PSP22 PALLET WRAPPER', () => {
     })
 
     afterEach( async function() {
-        await buildTx(api.registry, api.tx.assets.destroy(1, {accounts: 10, sufficients: 10, approvals: 10}), alice)
+        await buildTx(api.registry, api.tx.assets.startDestroy(1), alice)
+        // Should be done 2 times because sometimes fails with InUse Error
+        await buildTx(api.registry, api.tx.assets.destroyApprovals(1), alice)
+        await buildTx(api.registry, api.tx.assets.destroyAccounts(1), alice)
+        await buildTx(api.registry, api.tx.assets.destroyApprovals(1), alice)
+        await buildTx(api.registry, api.tx.assets.destroyAccounts(1), alice)
+        await buildTx(api.registry, api.tx.assets.finishDestroy(1), alice)
     })
 
     it('get the proper asset id', async () => {
-        await expect((await psp22.query.assetId()).value.toNumber()).to.equal(1)
+        await expect((await psp22.query.assetId()).value.unwrap().toNumber()).to.equal(1)
     })
 
     it('deposit works', async () => {
@@ -47,7 +53,7 @@ describe('PSP22 PALLET WRAPPER', () => {
         let { gasRequired } = await psp22.query.deposit(100);
         await psp22.tx.deposit(100, {gasLimit: gasRequired });
 
-        await expect((await psp22.query.balanceOf(alice.address)).value.toNumber()).to.equal(100)
+        await expect((await psp22.query.balanceOf(alice.address)).value.unwrap().toNumber()).to.equal(100)
     })
 
     it('deposit & transfer to bob works', async () => {
@@ -65,8 +71,8 @@ describe('PSP22 PALLET WRAPPER', () => {
         await expect((await api.query.assets.account(1, alice.address)).unwrapOrDefault().balance.toNumber()).to.equal(1000 - 100)
         // @ts-ignore
         await expect((await api.query.assets.account(1, bob.address)).unwrapOrDefault().balance.toNumber()).to.equal(0)
-        await expect((await psp22.query.balanceOf(alice.address)).value.toNumber()).to.equal(0)
-        await expect((await psp22.query.balanceOf(bob.address)).value.toNumber()).to.equal(100)
+        await expect((await psp22.query.balanceOf(alice.address)).value.unwrap().toNumber()).to.equal(0)
+        await expect((await psp22.query.balanceOf(bob.address)).value.unwrap().toNumber()).to.equal(100)
     })
 
     it('deposit & transfer to bob works & bob withdraw wroks', async () => {
@@ -87,7 +93,7 @@ describe('PSP22 PALLET WRAPPER', () => {
         await expect((await api.query.assets.account(1, alice.address)).unwrapOrDefault().balance.toNumber()).to.equal(1000 - 100)
         // @ts-ignore
         await expect((await api.query.assets.account(1, bob.address)).unwrapOrDefault().balance.toNumber()).to.equal(100)
-        await expect((await psp22.query.balanceOf(alice.address)).value.toNumber()).to.equal(0)
-        await expect((await psp22.query.balanceOf(bob.address)).value.toNumber()).to.equal(0)
+        await expect((await psp22.query.balanceOf(alice.address)).value.unwrap().toNumber()).to.equal(0)
+        await expect((await psp22.query.balanceOf(bob.address)).value.unwrap().toNumber()).to.equal(0)
     })
 })

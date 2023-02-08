@@ -1,16 +1,17 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![feature(min_specialization)]
 
-use ink_lang as ink;
-
 #[ink::contract]
 pub mod contract {
+    use assets_chain_extension_types::{
+        Origin,
+        Outcome as AssetsError,
+    };
     use assets_extension::*;
-    use ink_prelude::vec::Vec;
-    use ink_storage::traits::SpreadAllocate;
+    use ink::prelude::vec::Vec;
 
     #[ink(storage)]
-    #[derive(Default, SpreadAllocate)]
+    #[derive(Default)]
     pub struct Mock {}
 
     impl Mock {
