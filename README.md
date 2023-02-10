@@ -1,3 +1,6 @@
+/!\ This repo is no longer maintained and has been moved to [swanky-dapps chain-extension-contracts](https://github.com/swanky-dapps/chain-extension-contracts)
+
+-----
 # Chain-extension contracts
 This repository contains crates of chain-extension that you can use in your contracts.
 
@@ -35,9 +38,6 @@ pub mod staking_example {
 ```rust
 DappsStaking::read_unbonding_period()
 ```
-#### Balances - WIP
-
-#### XCM - WIP
 
 ### Examples & Tests
 These folders contain an example of how to use chain-extion structs in your contracts. The tests folders is an end-to-end tests for the chain extension. 
