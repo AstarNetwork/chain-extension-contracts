@@ -29,4 +29,3 @@ std = [
     "assets_extension/std",
     "assets-chain-extension-types/ink-std",
 ]
-ink-as-dependency = []

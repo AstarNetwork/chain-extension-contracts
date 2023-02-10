@@ -30,7 +30,6 @@ std = [
     "scale-info/std",
     "dapps_staking_extension/std"
 ]
-ink-as-dependency = []
 
 [profile.release]
 overflow-checks = false
