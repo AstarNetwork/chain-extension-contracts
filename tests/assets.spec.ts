@@ -38,7 +38,13 @@ describe('ASSETS', () => {
     })
 
     afterEach( async function() {
-        await buildTx(api.registry, api.tx.assets.destroy(ASSET_ID, {accounts: 10, sufficients: 10, approvals: 10}), alice)
+        await buildTx(api.registry, api.tx.assets.startDestroy(ASSET_ID), alice)
+        // Should be done 2 times because sometimes fails with InUse Error
+        await buildTx(api.registry, api.tx.assets.destroyApprovals(ASSET_ID), alice)
+        await buildTx(api.registry, api.tx.assets.destroyAccounts(ASSET_ID), alice)
+        await buildTx(api.registry, api.tx.assets.destroyApprovals(ASSET_ID), alice)
+        await buildTx(api.registry, api.tx.assets.destroyAccounts(ASSET_ID), alice)
+        await buildTx(api.registry, api.tx.assets.finishDestroy(ASSET_ID), alice)
     })
 
     it('create works', async () => {
@@ -90,10 +96,10 @@ describe('ASSETS', () => {
         await assets.tx.mint(ASSET_ID, alice.address,1000,{gasLimit: gas2 });
 
         // @ts-ignore
-        await expect((await assets.query.balanceOf(ASSET_ID, alice.address)).value.toNumber()).to.equal(1000)
+        await expect((await assets.query.balanceOf(ASSET_ID, alice.address)).value.unwrap().toNumber()).to.equal(1000)
 
         // @ts-ignore
-        await expect((await assets.query.totalSupply(1)).value.toNumber()).to.equal(1000)
+        await expect((await assets.query.totalSupply(1)).value.unwrap().toNumber()).to.equal(1000)
     })
 
     it('approve transfer and check allowance', async () => {
@@ -109,10 +115,10 @@ describe('ASSETS', () => {
         await assets.tx.approveTransfer(ASSET_ID, bob.address, 100, {gasLimit: gas3 });
 
         // @ts-ignore
-        await expect((await assets.query.allowance(ASSET_ID, alice.address, bob.address)).value.toNumber()).to.equal(100)
+        await expect((await assets.query.allowance(ASSET_ID, alice.address, bob.address)).value.unwrap().toNumber()).to.equal(100)
     })
 
-    it('approve transfer and check allowance', async () => {
+    it('approve transfer, transfer and check balances', async () => {
         let { gasRequired: gas }  = await assets.query.create(ASSET_ID,1, {
             value: 1000000,
         });
@@ -128,16 +134,16 @@ describe('ASSETS', () => {
         await assets.withSigner(bob).tx.transferApproved(ASSET_ID, alice.address, charlie.address, 50, {gasLimit: gas4});
 
         // @ts-ignore
-        await expect((await assets.query.allowance(ASSET_ID, alice.address, bob.address)).value.toNumber()).to.equal(50)
+        await expect((await assets.query.allowance(ASSET_ID, alice.address, bob.address)).value.unwrap().toNumber()).to.equal(50)
 
         // @ts-ignore
-        await expect((await assets.query.balanceOf(ASSET_ID, alice.address)).value.toNumber()).to.equal(950)
+        await expect((await assets.query.balanceOf(ASSET_ID, alice.address)).value.unwrap().toNumber()).to.equal(950)
 
         // @ts-ignore
-        await expect((await assets.query.balanceOf(ASSET_ID, bob.address)).value.toNumber()).to.equal(0)
+        await expect((await assets.query.balanceOf(ASSET_ID, bob.address)).value.unwrap().toNumber()).to.equal(0)
 
         // @ts-ignore
-        await expect((await assets.query.balanceOf(ASSET_ID, charlie.address)).value.toNumber()).to.equal(50)
+        await expect((await assets.query.balanceOf(ASSET_ID, charlie.address)).value.unwrap().toNumber()).to.equal(50)
     })
 
     it('cancel approval', async () => {
@@ -156,19 +162,19 @@ describe('ASSETS', () => {
         await assets.tx.cancelApproval(ASSET_ID, bob.address,{gasLimit: gas4 });
 
         // @ts-ignore
-        await expect((await assets.withSigner(bob).query.transferApproved(ASSET_ID, alice.address, charlie.address, 100)).value.err).to.equal('Unapproved')
+        await expect((await assets.withSigner(bob).query.transferApproved(ASSET_ID, alice.address, charlie.address, 100)).value.unwrap().err).to.equal('Unapproved')
 
         // @ts-ignore
-        await expect((await assets.query.allowance(ASSET_ID, alice.address, bob.address)).value.toNumber()).to.equal(0)
+        await expect((await assets.query.allowance(ASSET_ID, alice.address, bob.address)).value.unwrap().toNumber()).to.equal(0)
 
         // @ts-ignore
-        await expect((await assets.query.balanceOf(ASSET_ID, alice.address)).value.toNumber()).to.equal(1000)
+        await expect((await assets.query.balanceOf(ASSET_ID, alice.address)).value.unwrap().toNumber()).to.equal(1000)
 
         // @ts-ignore
-        await expect((await assets.query.balanceOf(ASSET_ID, bob.address)).value.toNumber()).to.equal(0)
+        await expect((await assets.query.balanceOf(ASSET_ID, bob.address)).value.unwrap().toNumber()).to.equal(0)
 
         // @ts-ignore
-        await expect((await assets.query.balanceOf(ASSET_ID, charlie.address)).value.toNumber()).to.equal(0)
+        await expect((await assets.query.balanceOf(ASSET_ID, charlie.address)).value.unwrap().toNumber()).to.equal(0)
     })
 
     it('set metadata and checks', async () => {
@@ -181,12 +187,12 @@ describe('ASSETS', () => {
         await assets.tx.setMetadata(ASSET_ID, 'Shiden Token' as unknown as string[], 'TTT' as unknown as string[], 18, {gasLimit: gas3 });
 
         // @ts-ignore
-        await expect((await assets.query.metadataName(1)).value).to.equal(stringToHex('Shiden Token'))
+        await expect((await assets.query.metadataName(1)).value.unwrap()).to.equal(stringToHex('Shiden Token'))
 
         // @ts-ignore
-        await expect((await assets.query.metadataSymbol(1)).value).to.equal(stringToHex('TTT'))
+        await expect((await assets.query.metadataSymbol(1)).value.unwrap()).to.equal(stringToHex('TTT'))
 
         // @ts-ignore
-        await expect((await assets.query.metadataDecimals(ASSET_ID, alice.address, bob.address)).value).to.equal(18)
+        await expect((await assets.query.metadataDecimals(ASSET_ID, alice.address, bob.address)).value.unwrap()).to.equal(18)
     })
 })

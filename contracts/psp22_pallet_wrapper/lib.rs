@@ -3,12 +3,12 @@
 
 #[openbrush::contract]
 pub mod psp22_pallet_wrapper {
+    use assets_chain_extension_types::Origin;
     use assets_extension::*;
-    use ink_lang::codegen::{
+    use ink::codegen::{
         EmitEvent,
         Env,
     };
-    use ink_storage::traits::SpreadAllocate;
     use openbrush::{
         contracts::psp22::*,
         traits::Storage,
@@ -51,7 +51,7 @@ pub mod psp22_pallet_wrapper {
     }
 
     #[ink(storage)]
-    #[derive(Default, SpreadAllocate, Storage)]
+    #[derive(Default, Storage)]
     pub struct PSP22WrapperContract {
         #[storage_field]
         psp22: psp22::Data,
@@ -64,9 +64,9 @@ pub mod psp22_pallet_wrapper {
     impl PSP22WrapperContract {
         #[ink(constructor)]
         pub fn new(asset_id: u128) -> Self {
-            ink_lang::codegen::initialize_contract(|instance: &mut Self| {
-                instance.asset_id = asset_id;
-            })
+            let mut instance = Self::default();
+            instance.asset_id = asset_id;
+            instance
         }
 
         #[ink(message)]

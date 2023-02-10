@@ -39,12 +39,12 @@ describe('DAPPS STAKING', () => {
     it('should read current era', async () => {
         const currentEra = await api.query.dappsStaking.currentEra()
         // @ts-ignore
-        await expect((await stakingContract.query.readCurrentEra()).value).to.equal(currentEra.toNumber())
+        await expect((await stakingContract.query.readCurrentEra()).value.ok).to.equal(currentEra.toNumber())
     })
 
     it('should read unbonding period', async () => {
         const bondingDuration = api.consts.dappsStaking.unbondingPeriod
-        await expect((await stakingContract.query.readUnbondingPeriod()).value.toLocaleString()).to.equal(bondingDuration.toString())
+        await expect((await stakingContract.query.readUnbondingPeriod()).value.ok.toLocaleString()).to.equal(bondingDuration.toString())
     })
 
     it('should read era reward', async () => {
@@ -57,7 +57,7 @@ describe('DAPPS STAKING', () => {
         const currentEra = await api.query.dappsStaking.currentEra()
         const generalEraInfo = (await api.query.dappsStaking.generalEraInfo<Option<EraInfo>>(currentEra))?.unwrapOrDefault()
         // @ts-ignore
-        await expect((await stakingContract.query.readEraReward(currentEra)).value.toNumber()).to.equal(generalEraInfo.rewards.dapps.toNumber() + generalEraInfo.rewards.stakers.toNumber())
+        await expect((await stakingContract.query.readEraReward(currentEra)).value.ok.toNumber()).to.equal(generalEraInfo.rewards.dapps.toNumber() + generalEraInfo.rewards.stakers.toNumber())
     })
 
     it('should read era staked', async () => {
@@ -68,7 +68,7 @@ describe('DAPPS STAKING', () => {
         const currentEra = await api.query.dappsStaking.currentEra()
         const generalEraInfo = (await api.query.dappsStaking.generalEraInfo<Option<EraInfo>>(currentEra))?.unwrapOrDefault()
         // @ts-ignore
-        await expect((await stakingContract.query.readEraStaked(currentEra)).value.toString()).to.equal(generalEraInfo.staked.toString())
+        await expect((await stakingContract.query.readEraStaked(currentEra)).value.ok.toString()).to.equal(generalEraInfo.staked.toString())
     })
 
     it('should read contract stake', async () => {
@@ -78,7 +78,7 @@ describe('DAPPS STAKING', () => {
 
         const ledger = await api.query.dappsStaking.ledger(bob.address)
         // @ts-ignore
-        await expect((await stakingContract.query.readStakedAmount(bob.address)).value.toString()).to.equal(ledger.locked.toString())
+        await expect((await stakingContract.query.readStakedAmount(bob.address)).value.ok.toString()).to.equal(ledger.locked.toString())
     })
 
     it('should read staked amount on contract', async () => {
@@ -92,7 +92,7 @@ describe('DAPPS STAKING', () => {
                 Wasm: stakingContract.address,
             }
         );
-        await expect((await stakingContract.query.readStakedAmountOnContract(bob.address, stakingContract.address)).value.toString())
+        await expect((await stakingContract.query.readStakedAmountOnContract(bob.address, stakingContract.address)).value.ok.toString())
             .to.equal(generalStakerInfo.stakes[generalStakerInfo.stakes.length - 1].staked.toString())
     })
 
@@ -104,7 +104,7 @@ describe('DAPPS STAKING', () => {
         const currentEra = await api.query.dappsStaking.currentEra()
         const contractStake = (await api.query.dappsStaking.contractEraStake<Option<EraStakingPointsIndividualClaim>>({ Wasm: stakingContract.address }, currentEra))?.unwrapOrDefault();
 
-        await expect((await stakingContract.query.readContractStake(stakingContract.address)).value.toString()).to.equal(contractStake.total.toString())
+        await expect((await stakingContract.query.readContractStake(stakingContract.address)).value.ok.toString()).to.equal(contractStake.total.toString())
     })
 
     it('should bond and stake on contract', async () => {
