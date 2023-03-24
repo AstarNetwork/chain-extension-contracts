@@ -1,0 +1,35 @@
+[package]
+name = "signing_example"
+version = "0.1.0"
+authors = ["Stake Technologies <devops@stake.co.jp>"]
+edition = "2021"
+
+[dependencies]
+ink = { version = "4.0.0", default-features = false }
+ink_metadata = { version = "4.0.0", features = ["derive"], optional = true }
+
+scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
+scale-info = { version = "2", default-features = false, features = ["derive"], optional = true }
+
+signing_extension = { path = "../../crates/signing", default-features = false }
+
+[lib]
+name = "signing_example"
+path = "lib.rs"
+crate-type = [
+    # Used for normal contract Wasm blobs.
+    "cdylib",
+]
+
+[features]
+default = ["std"]
+std = [
+    "ink_metadata/std",
+    "ink/std",
+    "scale/std",
+    "scale-info/std",
+    "signing_extension/std"
+]
+
+[profile.release]
+overflow-checks = false

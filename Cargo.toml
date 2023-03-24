@@ -1,10 +1,11 @@
 [workspace]
 members = [
-    "examples/dapps-staking",
+    #"examples/dapps-staking",
 #    "examples/rmrk",
 #    "examples/rooster-contract",
-    "examples/assets",
-    "contracts/**"
+    # "examples/assets",
+    "examples/signing",
+    #a "contracts/**"
 ]
 exclude = [
     "crates/dapps-staking",
