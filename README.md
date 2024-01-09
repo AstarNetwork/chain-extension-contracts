@@ -1,53 +1,65 @@
-/!\ This repo is no longer maintained and has been moved to [swanky-dapps chain-extension-contracts](https://github.com/swanky-dapps/chain-extension-contracts)
+# Chain Extension contracts
+This repository contains crates of chain extension that you can use in your contracts.
 
------
-# Chain-extension contracts
-This repository contains crates of chain-extension that you can use in your contracts.
+### Extended documentation
+To know which chain extension is available in which networks and have more info about it please visit the official [Chain Extension docs](https://docs.astar.network/docs/build/wasm/contract_environment/chain-extension/chain_extensions/)
 
-### Crates
-#### Dapps Staking
-This crate exposes `DappsStaking` struct that implement all functions of dapps-staking chain extension. \
+### Purpose
+In `crates` folder you will find the chain extension struct that implements callable functions.
+In `contracts` folder you will find full implementation of the chain extension struct and its integration tests in `tests` folder
+
+### Versions
+[ink! v5.0.0-rc](https://github.com/paritytech/ink/releases/tag/v5.0.0-rc)
+
+### Chain Extensions
+
+#### Pallet Assets
+This crate exposes `AssetsExtension` struct that implement all functions of pallet-assets chain extension.    
+
 **Usage**
-
-1. add `dapps_staking_extension` in your `Cargo.toml` and to the `std` `features`
-```rust
-dapps_staking_extension = { git = "https://github.com/AstarNetwork/chain-extension-contracts", default-features = false }
-...
+1. add `assets_extension` in your `Cargo.toml` and to the `std` `features`
+```toml
+assets_extension = {  git = "https://github.com/AstarNetwork/chain-extension-contracts", default-features = false }
 
 [features]
 default = ["std"]
 std = [
-"ink_metadata/std",
-"ink_env/std",
-"ink_storage/std",
-"ink_primitives/std",
-"scale/std",
-"scale-info/std",
-"dapps_staking_extension/std" <--- Here
+    "ink/std",
+    "scale/std",
+    "scale-info/std",
+    "assets_extension/std",
 ]
 ```
 
-2. Add use statement in your contract module
+2. Add use statement in your contract module and declare AssetsExtension type
 ```rust
-pub mod staking_example {
-    use dapps_staking_extension::*;
-...
+use assets_extension::{AssetsError, AssetsExtension as _AssetsExtension};
+
+type AssetsExtension = _AssetsExtension<DefaultEnvironment>;
 ```
 
 3. Use struct functions directly in your contract
 ```rust
-DappsStaking::read_unbonding_period()
+AssetsExtension::mint(asset_id, beneficiary, amount)?;
 ```
 
-### Examples & Tests
-These folders contain an example of how to use chain-extion structs in your contracts. The tests folders is an end-to-end tests for the chain extension. 
+Note: As precompiles in Solidity, the contract is the `caller` (the Origin of the call in the runtime)
 
-**Runs the tests**
-1. Run a local node \
-Use [swanky-node](https://github.com/AstarNetwork/swanky-node) or [Astar-local](https://github.com/AstarNetwork/Astar) that have the specified chain-extension enabled. Please follow the build & run instructions in their respective repository.
-2. The end-to-end test uses redspot as testing environment. Node version should be 18
-```bash
+### License
+Apache 2.0
+
+## 🏗️ How to use - Contracts
+##### 💫 Build
+Use these [instructions](https://use.ink/getting-started/setup) to set up your ink!/Rust environment    
+Run this command to compile contract:
+
+```sh
 yarn
 yarn compile
+```
+
+2. Run the tests
+Ensure a local node is running
+```sh
 yarn test
 ```

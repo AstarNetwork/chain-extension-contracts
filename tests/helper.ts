@@ -1,110 +1,92 @@
-import {Codec, Registry} from "@polkadot/types/types";
-import {SignerOptions, SubmittableExtrinsic} from "@polkadot/api/types";
 import {KeyringPair} from "@polkadot/keyring/types";
-import {SubmittableResult} from "@polkadot/api";
-import {AbiEvent} from "@polkadot/api-contract/types";
+import {ApiPromise} from "@polkadot/api";
+import {Abi, CodePromise, ContractPromise} from "@polkadot/api-contract";
+import {WeightV2} from "@polkadot/types/interfaces";
 
-export async function buildTx(
-    registry: Registry,
-    extrinsic: SubmittableExtrinsic<'promise'>,
-    signer: KeyringPair,
-    options?: Partial<SignerOptions>
-): Promise<TransactionResponse> {
-    const signerAddress = signer;
-    return new Promise((resolve, reject) => {
-        const actionStatus = {
-            from: signerAddress.toString(),
-            txHash: extrinsic.hash.toHex()
-        } as Partial<TransactionResponse>;
+export async function assetsPalletTx(api: ApiPromise, alice: KeyringPair, tx: any, params: any[]) {
+    let finish = false;
+    const unsub = await api.tx.assets[tx](...params)
+        .signAndSend(alice, {nonce: -1}, ({status}) => {
+            if (status.isFinalized) {
+                finish = true;
+                unsub();
+            }
+        });
+    while (!finish) {
+        await waitFor(1);
+    }
+}
 
-        extrinsic
-            .signAndSend(
-                signerAddress,
-                {
-                    ...options
-                },
-                (result: SubmittableResult) => {
-                    if (result.status.isInBlock) {
-                        actionStatus.blockHash = result.status.asInBlock.toHex();
-                    }
+export async function deployContract(api: ApiPromise, deployer: KeyringPair, contractRaw: string) {
+    const contractAbi = new Abi(contractRaw);
+    const estimatedGas = api.registry.createType(
+        'WeightV2',
+        {
+            refTime: 70_000_000_000,
+            proofSize: 100_000,
+        });
 
-                    if (result.status.isFinalized || result.status.isInBlock) {
-                        result.events
-                            .filter(
-                                ({ event: { section } }: any): boolean => section === 'system'
-                            )
-                            .forEach((event: any): void => {
-                                const {
-                                    event: { data, method }
-                                } = event;
-
-                                if (method === 'ExtrinsicFailed') {
-                                    const [dispatchError] = data;
-                                    let message = dispatchError.type;
-
-                                    if (dispatchError.isModule) {
-                                        try {
-                                            const mod = dispatchError.asModule;
-                                            const error = registry.findMetaError(
-                                                new Uint8Array([
-                                                    mod.index.toNumber(),
-                                                    mod.error.toNumber()
-                                                ])
-                                            );
-                                            message = `${error.section}.${error.name}${
-                                                Array.isArray(error.docs)
-                                                    ? `(${error.docs.join('')})`
-                                                    : error.docs || ''
-                                            }`;
-                                        } catch (error) {
-                                            // swallow
-                                        }
-                                    }
-
-                                    actionStatus.error = {
-                                        message
-                                    };
-
-                                    reject(actionStatus);
-                                } else if (method === 'ExtrinsicSuccess') {
-                                    actionStatus.result = result;
-                                    resolve(actionStatus as TransactionResponse);
-                                }
-                            });
-                    } else if (result.isError) {
-                        actionStatus.error = {
-                            data: result
-                        };
-                        actionStatus.events = null;
-
-                        reject(actionStatus);
-                    }
-                }
-            )
-            .catch((error: any) => {
-                actionStatus.error = {
-                    message: error.message
-                };
-
-                reject(actionStatus);
-            });
+    const code = new CodePromise(api, contractAbi, contractAbi.info.source.wasm);
+    // @ts-ignore
+    const tx = code.tx.new({gasLimit: estimatedGas})
+    let finish = false;
+    let promise: ContractPromise;
+    // @ts-ignore
+    const unsub = await tx.signAndSend(deployer, {nonce: -1}, ({contract, status,}) => {
+        if (status.isFinalized) {
+            let address = contract.address.toString();
+            promise = new ContractPromise(api, contractAbi, address);
+            finish = true;
+            unsub();
+        }
     });
+
+    while (!finish) {
+        await waitFor(1);
+    }
+    // @ts-ignore
+    return promise;
 }
 
-export interface DecodedEvent {
-    args: Codec[];
-    name: string;
-    event: AbiEvent;
+export async function contractCall(api: ApiPromise, contract: ContractPromise, tx: any, params: any[], signer: any) {
+    const gasLimit: WeightV2 = api.registry.createType(
+        'WeightV2',
+        {
+            refTime: 100_000_000_000,
+            proofSize: 600_000,
+        });
+
+    // Dry run to get logs
+    const {result} = await contract.query[tx](
+        signer.address,
+        {
+            gasLimit,
+            storageDepositLimit: null
+        },
+        ...params
+    )
+    console.log("CONTRACT TX RESULT", result.toHuman())
+
+    let finish = false;
+    const unsub = await contract.tx[tx](
+        {
+            gasLimit: gasLimit,
+            storageDepositLimit: null,
+        },
+        ...params
+    )
+        .signAndSend(signer, (res: any) => {
+            if (res.status.isFinalized) {
+                finish = true;
+                unsub()
+            }
+        })
+
+    while (!finish) {
+        await waitFor(1);
+    }
 }
 
-export interface TransactionResponse {
-    from: string;
-    txHash?: string;
-    blockHash?: string;
-    error?: {
-        message?: any;
-        data?: any;
-    };
-    result: SubmittableResult;
-    events?: DecodedEvent[];
+export async function waitFor(ms: any) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }

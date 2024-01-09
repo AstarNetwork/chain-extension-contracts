@@ -1,7 +1,6 @@
 {
   "projectFiles": [
     "examples/assets",
-    "examples/dapps-staking",
     "contracts/psp22_pallet_wrapper"
   ],
   "typechainGeneratedPath": "types",
