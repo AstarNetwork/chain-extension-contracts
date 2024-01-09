@@ -1,15 +1,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use ink::env::{
-    DefaultEnvironment,
-    Environment,
-};
+use ink::env::{DefaultEnvironment, Environment};
 
-use scale::{
-    Decode,
-    Encode,
-    HasCompact,
-};
+use scale::{Decode, Encode, HasCompact};
 
 type Balance = <DefaultEnvironment as Environment>::Balance;
 type AccountId = <DefaultEnvironment as Environment>::AccountId;

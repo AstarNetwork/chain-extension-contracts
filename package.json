@@ -16,20 +16,20 @@
     "eslint-plugin-promise": "^5.1.0",
     "mocha": "10.1.0",
     "ts-node": "^10.8.0",
-    "@727-ventures/typechain-compiler": "0.5.10",
-    "@727-ventures/typechain-types": "0.0.21",
+    "@727-ventures/typechain-compiler": "0.5.17",
+    "@727-ventures/typechain-types": "0.0.23",
     "patch-package": "^6.5.1"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "resolutions": {
-    "@polkadot/api": "^9.10.3",
-    "@polkadot/api-contract": "^9.10.3"
+    "@polkadot/api": "9.13.4",
+    "@polkadot/api-contract": "9.13.4"
   },
   "scripts": {
-    "compile": "typechain-compiler",
-    "compile:release": "typechain-compiler --release",
+    "compile": "typechain-compiler --toolchain nightly-2023-02-07",
+    "compile:release": "typechain-compiler --release  --toolchain nightly-2023-02-07",
     "test": "mocha --require ts-node/register --recursive ./tests --extension \".spec.ts\" --exit --timeout 2000000",
     "test:single": "mocha --require ts-node/register --extension \".ts\" --exit --timeout 20000",
     "postinstall": "patch-package"

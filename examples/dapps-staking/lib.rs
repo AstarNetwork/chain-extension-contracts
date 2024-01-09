@@ -39,7 +39,11 @@ pub mod staking_example {
         }
 
         #[ink(message)]
-        pub fn read_staked_amount_on_contract(&self, staker: AccountId, contract: AccountId) -> Balance {
+        pub fn read_staked_amount_on_contract(
+            &self,
+            staker: AccountId,
+            contract: AccountId,
+        ) -> Balance {
             DappsStaking::read_staked_amount_on_contract(staker, contract)
         }
 

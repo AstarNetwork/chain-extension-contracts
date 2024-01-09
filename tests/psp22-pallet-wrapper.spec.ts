@@ -7,8 +7,13 @@ import { KeyringPair } from '@polkadot/keyring/types';
 import {buildTx} from "./helper";
 import {afterEach} from "mocha";
 import {WeightV2} from "@polkadot/types/interfaces";
+import BN from "bn.js";
 
 use(chaiAsPromised);
+
+const ONE = new BN(10).pow(new BN(18));
+
+const ASSET_ID = 1
 
 // Create a new instance of contract
 const wsProvider = new WsProvider('ws://127.0.0.1:9944');
@@ -22,10 +27,8 @@ describe('PSP22 PALLET WRAPPER', () => {
     let psp22Constructor: psp22_constructor
     let psp22: psp22_contract;
 
-    let gasRequired: WeightV2;
-
      beforeEach(async function() {
-        api = await ApiPromise.create({ provider: wsProvider });
+         api = await ApiPromise.create({ provider: wsProvider, noInitWarn: true });
         alice = keyring.addFromUri('//Alice');
         bob = keyring.addFromUri('//Bob');
         psp22Constructor = new psp22_constructor(api, alice);
@@ -34,65 +37,62 @@ describe('PSP22 PALLET WRAPPER', () => {
     })
 
     afterEach( async function() {
-        await buildTx(api.registry, api.tx.assets.startDestroy(1), alice)
+        await buildTx(api.registry, api.tx.assets.startDestroy(ASSET_ID), alice)
         // Should be done 2 times because sometimes fails with InUse Error
-        await buildTx(api.registry, api.tx.assets.destroyApprovals(1), alice)
-        await buildTx(api.registry, api.tx.assets.destroyAccounts(1), alice)
-        await buildTx(api.registry, api.tx.assets.destroyApprovals(1), alice)
-        await buildTx(api.registry, api.tx.assets.destroyAccounts(1), alice)
-        await buildTx(api.registry, api.tx.assets.finishDestroy(1), alice)
+        await buildTx(api.registry, api.tx.assets.destroyApprovals(ASSET_ID), alice)
+        await buildTx(api.registry, api.tx.assets.destroyAccounts(ASSET_ID), alice)
+        await buildTx(api.registry, api.tx.assets.destroyApprovals(ASSET_ID), alice)
+        await buildTx(api.registry, api.tx.assets.destroyAccounts(ASSET_ID), alice)
+        await buildTx(api.registry, api.tx.assets.finishDestroy(ASSET_ID), alice)
     })
 
     it('get the proper asset id', async () => {
-        await expect((await psp22.query.assetId()).value.unwrap().toNumber()).to.equal(1)
+        await expect((await psp22.query.assetId()).value.unwrap().toNumber()).to.equal(ASSET_ID)
     })
 
     it('deposit works', async () => {
-        await buildTx(api.registry, api.tx.assets.mint(1, {id: alice.address}, 1000), alice)
+        await buildTx(api.registry, api.tx.assets.mint(ASSET_ID, {id: alice.address}, ONE.muln(1000)), alice)
+        await buildTx(api.registry, api.tx.assets.approveTransfer(ASSET_ID, psp22.address, ONE.muln(100)), alice)
 
-        let { gasRequired } = await psp22.query.deposit(100);
-        await psp22.tx.deposit(100, {gasLimit: gasRequired });
+        await psp22.tx.deposit(ONE.muln(100));
 
-        await expect((await psp22.query.balanceOf(alice.address)).value.unwrap().toNumber()).to.equal(100)
+        await expect((await psp22.query.balanceOf(alice.address)).value.unwrap().toString()).to.equal(ONE.muln(100).toString())
     })
 
     it('deposit & transfer to bob works', async () => {
-        await buildTx(api.registry, api.tx.assets.mint(1, {id: alice.address}, 1000), alice)
+        await buildTx(api.registry, api.tx.assets.mint(ASSET_ID, {id: alice.address}, ONE.muln(1000)), alice)
+        await buildTx(api.registry, api.tx.assets.approveTransfer(ASSET_ID, psp22.address, ONE.muln(100)), alice)
 
-        let { gasRequired } = await psp22.query.deposit(100);
-        await psp22.tx.deposit(100, {gasLimit: gasRequired });
+        await psp22.tx.deposit(ONE.muln(100));
 
-        let { gasRequired: gas }  = await psp22.query.transfer(bob.address ,100, ['']);
-        await psp22.tx.transfer(bob.address ,100, [''], {gasLimit: gas });
+        await psp22.tx.transfer(bob.address, ONE.muln(100), ['']);
 
         // @ts-ignore
-        await expect((await api.query.assets.account(1, psp22.address)).unwrapOrDefault().balance.toNumber()).to.equal(100)
+        await expect((await api.query.assets.account(ASSET_ID, psp22.address)).unwrapOrDefault().balance.toString()).to.equal(ONE.muln(100).toString())
         // @ts-ignore
-        await expect((await api.query.assets.account(1, alice.address)).unwrapOrDefault().balance.toNumber()).to.equal(1000 - 100)
+        await expect((await api.query.assets.account(ASSET_ID, alice.address)).unwrapOrDefault().balance.toString()).to.equal(ONE.muln(900).toString())
         // @ts-ignore
-        await expect((await api.query.assets.account(1, bob.address)).unwrapOrDefault().balance.toNumber()).to.equal(0)
+        await expect((await api.query.assets.account(ASSET_ID, bob.address)).unwrapOrDefault().balance.toNumber()).to.equal(0)
         await expect((await psp22.query.balanceOf(alice.address)).value.unwrap().toNumber()).to.equal(0)
-        await expect((await psp22.query.balanceOf(bob.address)).value.unwrap().toNumber()).to.equal(100)
+        await expect((await psp22.query.balanceOf(bob.address)).value.unwrap().toString()).to.equal(ONE.muln(100).toString())
     })
 
     it('deposit & transfer to bob works & bob withdraw wroks', async () => {
-        await buildTx(api.registry, api.tx.assets.mint(1, {id: alice.address}, 1000), alice)
+        await buildTx(api.registry, api.tx.assets.mint(ASSET_ID, {id: alice.address}, ONE.muln(1000)), alice)
+        await buildTx(api.registry, api.tx.assets.approveTransfer(ASSET_ID, psp22.address, ONE.muln(100)), alice)
 
-        let { gasRequired } = await psp22.query.deposit(100);
-        await psp22.tx.deposit(100, {gasLimit: gasRequired });
+        await psp22.tx.deposit(ONE.muln(100));
 
-        let { gasRequired: gas }  = await psp22.query.transfer(bob.address ,100, ['']);
-        await psp22.tx.transfer(bob.address ,100, [''], {gasLimit: gas });
+        await psp22.tx.transfer(bob.address, ONE.muln(100), ['']);
 
-        let { gasRequired: gas2 }  = await psp22.withSigner(bob).query.withdraw(100);
-        await psp22.withSigner(bob).tx.withdraw(100, {gasLimit: gas2 });
+        await psp22.withSigner(bob).tx.withdraw(ONE.muln(100));
 
         // @ts-ignore
-        await expect((await api.query.assets.account(1, psp22.address)).unwrapOrDefault().balance.toNumber()).to.equal(0)
+        await expect((await api.query.assets.account(ASSET_ID, psp22.address)).unwrapOrDefault().balance.toNumber()).to.equal(0)
         // @ts-ignore
-        await expect((await api.query.assets.account(1, alice.address)).unwrapOrDefault().balance.toNumber()).to.equal(1000 - 100)
+        await expect((await api.query.assets.account(ASSET_ID, alice.address)).unwrapOrDefault().balance.toString()).to.equal(ONE.muln(900).toString())
         // @ts-ignore
-        await expect((await api.query.assets.account(1, bob.address)).unwrapOrDefault().balance.toNumber()).to.equal(100)
+        await expect((await api.query.assets.account(ASSET_ID, bob.address)).unwrapOrDefault().balance.toString()).to.equal(ONE.muln(100).toString())
         await expect((await psp22.query.balanceOf(alice.address)).value.unwrap().toNumber()).to.equal(0)
         await expect((await psp22.query.balanceOf(bob.address)).value.unwrap().toNumber()).to.equal(0)
     })

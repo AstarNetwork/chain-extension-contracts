@@ -5,11 +5,10 @@ authors = ["Stake Technologies <devops@stake.co.jp>"]
 edition = "2021"
 
 [dependencies]
-ink = { version = "4.0.0-rc", default-features = false }
-ink_metadata = { version = "4.0.0-rc", features = ["derive"], optional = true }
+ink = { version = "4.2.0", default-features = false }
 
 scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
-scale-info = { version = "2", default-features = false, features = ["derive"], optional = true }
+scale-info = { version = "2.5", default-features = false, features = ["derive"], optional = true }
 
 [lib]
 name = "dapps_staking_extension"
@@ -20,7 +19,6 @@ crate-type = ["rlib"]
 default = ["std"]
 std = [
     "ink/std",
-    "ink_metadata/std",
     "scale/std",
     "scale-info/std",
 ]
