@@ -1,3 +1,5 @@
+> ⚠️ 20-05-2026: This repository is archived and no longer maintain. WASM smart contracts are deprecated and chain extensions will be removed from Astar network soon. The repository code is kept as reference material.
+
 # Chain Extension contracts
 This repository contains crates of chain extension that you can use in your contracts.
 
